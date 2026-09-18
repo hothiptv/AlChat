@@ -16,6 +16,7 @@
             --text-main: #e2e8f0;
             --text-sub: #94a3b8;
             --neon-blue: #00f2fe;
+            --error-red: #ef4444;
         }
 
         body, html {
@@ -52,37 +53,6 @@
             flex-shrink: 0;
         }
 
-        .title-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(0, 242, 254, 0.25);
-            padding: 6px 14px;
-            border-radius: 8px;
-            color: var(--neon-blue);
-            font-size: 15px;
-            font-weight: 700;
-            max-width: 450px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.05);
-            transition: all 0.4s ease;
-        }
-
-        .title-box.active {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3), inset 0 0 8px rgba(0, 242, 254, 0.1);
-            animation: fadeInPulse 0.8s ease-in-out;
-        }
-
-        @keyframes fadeInPulse {
-            0% { opacity: 0.3; transform: scale(0.97); }
-            50% { opacity: 1; transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
         .viewer-card {
             flex: 1;
             background-color: var(--panel-bg);
@@ -93,6 +63,7 @@
             overflow: hidden;
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
             min-height: 0;
+            position: relative;
         }
 
         .viewer-body {
@@ -103,13 +74,59 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin: 12px;
+            box-sizing: border-box;
+        }
+
+        .viewer-title-inside {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--neon-blue);
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+            word-break: break-word;
+            text-align: center;
+        }
+
+        .viewer-text-content {
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             line-height: 1.6;
             white-space: pre-wrap;
             word-break: break-all;
             color: #38bdf8;
-            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
+            padding: 24px;
+            text-align: center;
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .error-icon-circle {
+            font-size: 48px;
+            color: var(--error-red);
+            line-height: 1;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4));
+        }
+
+        .error-message-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fca5a5;
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.7); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .back-btn {
@@ -125,6 +142,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .back-btn:hover {
@@ -134,7 +152,7 @@
 
         @media (max-width: 768px) {
             .viewer-container { padding: 6px; }
-            .title-box { max-width: 180px; }
+            .viewer-title-inside { font-size: 18px; }
         }
     </style>
 </head>
@@ -142,26 +160,45 @@
 
 <div class="viewer-container">
     <div class="viewer-header">
-        <div class="d-flex align-items-center gap-2">
-            <h5 class="m-0 fw-bold text-light"><i class="bi bi-file-earmark-code"></i> AlViewer</h5>
-            <div class="title-box" id="titleContainer">
-                <i class="bi bi-file-text"></i>
-                <span id="sourceUrlDisplay">Đang kết nối Database...</span>
-            </div>
-        </div>
-        <a href="alchat.html" class="back-btn">
+        <h5 class="m-0 fw-bold text-light"><i class="bi bi-file-earmark-code"></i> AlViewer</h5>
+        <a href="index.html" class="back-btn">
             <i class="bi bi-arrow-left"></i> Quay về AlChat
         </a>
     </div>
 
     <div class="viewer-card">
         <div id="loadingBox" class="text-center py-5 text-secondary my-auto">
-            <div class="spinner-border spinner-border-sm me-2" role="status"></div> Đang tải dữ liệu từ Cloud...
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div> Đang tải dữ liệu...
         </div>
-        <div id="errorBox" class="alert alert-danger m-3 d-none"></div>
-        <pre id="contentBox" class="viewer-body d-none"></pre>
+        
+        <div id="errorBox" class="error-container d-none">
+            <div class="error-icon-circle">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="error-message-text">Không thể tải được dữ liệu</div>
+        </div>
+        
+        <div id="contentBox" class="viewer-body d-none">
+            <div id="insideTitle" class="viewer-title-inside d-none"></div>
+            <pre id="insideTextContent" class="viewer-text-content"></pre>
+        </div>
     </div>
 </div>
+
+<script>
+    // Chặn phím F12 và các tổ hợp phím mở Developer Tools
+    document.addEventListener('keydown', function(e) {
+        if (
+            e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+            (e.ctrlKey && (e.key === 'U' || e.key === 'u'))
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    });
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -190,8 +227,8 @@
     const loadingBox = document.getElementById('loadingBox');
     const errorBox = document.getElementById('errorBox');
     const contentBox = document.getElementById('contentBox');
-    const sourceUrlDisplay = document.getElementById('sourceUrlDisplay');
-    const titleContainer = document.getElementById('titleContainer');
+    const insideTitle = document.getElementById('insideTitle');
+    const insideTextContent = document.getElementById('insideTextContent');
     const tabTitle = document.getElementById('tabTitle');
 
     function parseCustomTitleAndContent(rawText) {
@@ -201,10 +238,10 @@
 
         for (let i = 0; i < lines.length; i++) {
             const lineTrim = lines[i].trim();
-            const titleMatch = lineTrim.match(/^title\s*=\s*["']?(.*?)["']?$/i);
+            const titleMatch = lineTrim.match(/^title\s*=\s*["'“’‘” ancient]?(.*?)["'“’‘” ancient]?$/i);
             
             if (titleMatch && !extractedTitle) {
-                extractedTitle = titleMatch[1];
+                extractedTitle = titleMatch[1].replace(/^["'“’‘”]+|["'“’‘”]+$/g, '').trim();
             } else {
                 remainingLines.push(lines[i]);
             }
@@ -212,10 +249,10 @@
 
         if (extractedTitle) {
             tabTitle.innerText = `${extractedTitle} - AlViewer`;
-            sourceUrlDisplay.innerText = extractedTitle;
-            titleContainer.classList.add('active');
+            insideTitle.innerText = extractedTitle;
+            insideTitle.classList.remove('d-none');
         } else {
-            sourceUrlDisplay.innerText = `Tham chiếu: ?${refKey}`;
+            insideTitle.classList.add('d-none');
         }
 
         return remainingLines.join('\n').trim();
@@ -224,9 +261,7 @@
     async function initViewer() {
         if (!refKey) {
             loadingBox.classList.add('d-none');
-            errorBox.innerText = "Thiếu từ khóa tham chiếu trên URL (Ví dụ: alviewer?hi)";
             errorBox.classList.remove('d-none');
-            sourceUrlDisplay.innerText = "Lỗi Tham Chiếu";
             return;
         }
 
@@ -235,25 +270,24 @@
             const docSnap = await getDoc(docRef);
 
             if (!docSnap.exists()) {
-                throw new Error("Không tìm thấy cấu hình hệ thống trên CSDL.");
+                throw new Error();
             }
 
             const alviewerData = docSnap.data().alviewerData || {};
             const rawContent = alviewerData[refKey];
 
             if (!rawContent) {
-                throw new Error(`Dữ liệu tham chiếu "?${refKey}" chưa được khởi tạo trong Database.`);
+                throw new Error();
             }
 
             const cleanContent = parseCustomTitleAndContent(rawContent);
 
             loadingBox.classList.add('d-none');
-            contentBox.innerText = cleanContent;
+            insideTextContent.innerText = cleanContent;
             contentBox.classList.remove('d-none');
 
         } catch (err) {
             loadingBox.classList.add('d-none');
-            errorBox.innerText = err.message;
             errorBox.classList.remove('d-none');
         }
     }
