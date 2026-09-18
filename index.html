@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AlChat v0.4.7</title>
+    <title>AlChat v0.4.9</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* Định nghĩa biến màu cho Dark / Light mode */
+        /* CSS Variables for Dark / Light mode */
         [data-theme="dark"] {
             --bg-color: #0b0e14;
             --panel-bg: #161b22;
@@ -18,6 +19,7 @@
             --text-sub: #94a3b8;
             --neon-blue: #00f2fe;
             --input-bg: rgba(31, 36, 45, 0.95);
+            --code-bg: #0d1117;
         }
 
         [data-theme="light"] {
@@ -30,6 +32,7 @@
             --text-sub: #64748b;
             --neon-blue: #0284c7;
             --input-bg: rgba(255, 255, 255, 0.95);
+            --code-bg: #f1f5f9;
         }
 
         *, *::before, *::after {
@@ -39,7 +42,7 @@
             box-sizing: border-box;
         }
 
-        input, textarea {
+        input, textarea, code, pre {
             user-select: text !important;
             -webkit-user-select: text !important;
         }
@@ -68,6 +71,7 @@
             position: relative;
         }
 
+        /* Sidebar Styling */
         .sidebar {
             width: 260px;
             background-color: var(--panel-bg);
@@ -118,6 +122,7 @@
             margin-left: auto;
         }
 
+        /* Main Chat View */
         .main-chat {
             flex: 1;
             display: flex;
@@ -222,11 +227,10 @@
         .message {
             padding: 12px 16px;
             border-radius: 16px;
-            max-width: 82%;
+            max-width: 85%;
             word-wrap: break-word;
             font-size: 15px;
             line-height: 1.5;
-            white-space: pre-wrap;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             position: relative;
             cursor: pointer;
@@ -236,6 +240,111 @@
 
         .message:hover {
             transform: translateY(-2px);
+        }
+
+        /* Full Markdown Formatting Styling */
+        .msg-text-block {
+            word-break: break-word;
+        }
+
+        .msg-text-block p {
+            margin-bottom: 8px;
+        }
+
+        .msg-text-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        .msg-text-block h1, .msg-text-block h2, .msg-text-block h3,
+        .msg-text-block h4, .msg-text-block h5, .msg-text-block h6 {
+            font-weight: 700;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .msg-text-block h1 { font-size: 1.4em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+        .msg-text-block h2 { font-size: 1.25em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+        .msg-text-block h3 { font-size: 1.15em; }
+        .msg-text-block h4 { font-size: 1.05em; }
+        .msg-text-block h5 { font-size: 1.0em; }
+        .msg-text-block h6 { font-size: 0.9em; opacity: 0.9; }
+
+        .msg-text-block blockquote {
+            border-left: 4px solid var(--neon-blue);
+            margin: 10px 0;
+            padding: 8px 14px;
+            background: rgba(0, 242, 254, 0.06);
+            color: var(--text-sub);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .msg-text-block blockquote p {
+            margin: 0;
+        }
+
+        .msg-text-block table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .msg-text-block th, .msg-text-block td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .msg-text-block th {
+            background-color: rgba(255, 255, 255, 0.08);
+            font-weight: 700;
+            color: var(--neon-blue);
+        }
+
+        .msg-text-block tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .msg-text-block ul, .msg-text-block ol {
+            padding-left: 22px;
+            margin: 8px 0;
+        }
+
+        .msg-text-block li {
+            margin-bottom: 4px;
+        }
+
+        .msg-text-block hr {
+            border: none;
+            height: 1px;
+            background: var(--border-color);
+            margin: 14px 0;
+        }
+
+        .msg-text-block code {
+            background: rgba(0, 242, 254, 0.12);
+            color: var(--neon-blue);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.9em;
+        }
+
+        .msg-text-block pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .msg-text-block a {
+            color: var(--neon-blue);
+            text-decoration: underline;
         }
 
         .msg-animate {
@@ -265,6 +374,120 @@
             align-self: flex-start;
             border: 1px solid var(--border-color);
             border-bottom-left-radius: 4px;
+        }
+
+        /* Code Block Card Component */
+        .code-block-card {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+
+        .code-card-header {
+            background-color: rgba(255, 255, 255, 0.06);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang-badge {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--neon-blue);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .code-card-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code-card-preview {
+            padding: 10px 12px;
+            margin: 0;
+            max-height: 100px;
+            overflow: hidden;
+            background: transparent;
+            color: var(--text-main);
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            opacity: 0.85;
+            position: relative;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .code-card-preview::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--code-bg));
+            pointer-events: none;
+        }
+
+        /* Fullscreen Web Preview Screen */
+        .web-preview-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2100;
+            background-color: var(--bg-color);
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .web-preview-screen.show {
+            display: flex;
+        }
+
+        .web-preview-topbar {
+            height: 52px;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .preview-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .preview-dot.red { background-color: #ff5f56; }
+        .preview-dot.yellow { background-color: #ffbd2e; }
+        .preview-dot.green { background-color: #27c93f; }
+
+        .web-preview-body {
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 52px);
+            background-color: #ffffff;
+        }
+
+        .web-preview-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
         .thinking-bubble {
@@ -329,7 +552,7 @@
             transform: translateY(-2px);
         }
 
-        /* Input Floating */
+        /* Floating Input */
         .input-floating-wrapper {
             position: absolute;
             bottom: 12px;
@@ -476,6 +699,7 @@
             color: var(--text-main);
             border: 1px solid var(--border-color);
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border-radius: 16px;
         }
 
         .modal-header, .modal-footer {
@@ -514,7 +738,7 @@
             .sidebar.show { transform: translateX(0); }
             .overlay.show { display: block; }
             .menu-toggle { display: block; }
-            .message { max-width: 90%; }
+            .message { max-width: 92%; }
         }
     </style>
 </head>
@@ -523,12 +747,37 @@
 <div class="overlay" id="overlay"></div>
 <div id="msgContextMenu" class="msg-context-menu"></div>
 
+<!-- Màn hình Chạy Trang Web (Web Preview) -->
+<div class="web-preview-screen" id="webPreviewScreen">
+    <div class="web-preview-topbar">
+        <div class="d-flex align-items-center gap-2">
+            <div class="preview-dots me-2">
+                <span class="preview-dot red"></span>
+                <span class="preview-dot yellow"></span>
+                <span class="preview-dot green"></span>
+            </div>
+            <span class="fw-bold" style="font-size: 14px; color: var(--text-main);">
+                <i class="bi bi-window-stack me-1 text-info"></i> Giao Diện Web Preview
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="previewReloadBtn" title="Tải lại trang"><i class="bi bi-arrow-clockwise"></i></button>
+            <button class="btn btn-sm btn-outline-primary" id="previewNewTabBtn" title="Mở trong tab mới"><i class="bi bi-box-arrow-up-right"></i> Tab mới</button>
+            <button class="btn btn-sm btn-danger px-3 fw-bold ms-2" id="previewCloseBtn"><i class="bi bi-x-lg me-1"></i> Đóng</button>
+        </div>
+    </div>
+    <div class="web-preview-body">
+        <iframe id="webPreviewIframe" sandbox="allow-scripts allow-modals allow-forms allow-same-origin" title="Web Preview"></iframe>
+    </div>
+</div>
+
 <div class="app-viewport">
+    <!-- Sidebar Container -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="sidebar-brand-img" alt="Logo">
             <span class="sidebar-brand-title">AlChat</span>
-            <span class="beta-tag">v0.4.7</span>
+            <span class="beta-tag">v0.4.9</span>
             <button class="btn-close btn-close-white ms-auto d-md-none" id="closeSidebarBtn"></button>
         </div>
 
@@ -543,11 +792,12 @@
         <div id="sessionList" style="flex: 1; overflow-y: auto;"></div>
     </div>
 
+    <!-- Main Chat Container -->
     <div class="main-chat">
         <div class="chat-header">
             <div class="d-flex align-items-center gap-2">
                 <button class="menu-toggle" id="menuToggleBtn"><i class="bi bi-list"></i></button>
-                <h5 class="m-0 fw-bold"><i class="bi bi-robot me-1"></i> AlChat <span style="font-size: 11px; font-weight: 500; color: var(--neon-blue);">(v0.4.7, AI by: Nguyễn Trọng An)</span></h5>
+                <h5 class="m-0 fw-bold"><i class="bi bi-robot me-1"></i> AlChat <span style="font-size: 11px; font-weight: 500; color: var(--neon-blue);">(v0.4.9, AI by: Nguyễn Trọng An)</span></h5>
             </div>
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-outline-danger btn-sm" id="clearChatBtn" title="Clear Chat"><i class="bi bi-trash"></i></button>
@@ -560,6 +810,26 @@
             <div class="input-area">
                 <input type="text" id="userInput" class="form-control custom-input" placeholder="Loading configuration, please wait..." disabled autocomplete="off">
                 <button class="btn-send-icon" id="sendBtn" title="Send"><i class="bi bi-arrow-return-left"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xem Code (Read-only Code Viewer) -->
+<div class="modal fade" id="codeViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h6 class="modal-title fw-bold text-info m-0">
+                    <i class="bi bi-code-square me-2"></i> Chi tiết Code (<span id="modalCodeLang">CODE</span>)
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-info fw-bold" id="modalCopyCodeBtn"><i class="bi bi-clipboard me-1"></i> Sao chép code</button>
+                    <button type="button" class="btn btn-sm btn-secondary fw-bold" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i> Đóng</button>
+                </div>
+            </div>
+            <div class="modal-body p-0">
+                <pre class="m-0 p-3" style="max-height: 70vh; overflow: auto; background-color: #0d1117; color: #e6edf3; font-family: 'Fira Code', Consolas, Monaco, monospace; font-size: 13px; line-height: 1.5; border-radius: 0 0 16px 16px;"><code id="modalCodeContainer"></code></pre>
             </div>
         </div>
     </div>
@@ -604,7 +874,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title fw-bold text-info"><i class="bi bi-gear-fill me-1"></i> BẢNG QUẢN TRỊ HỆ THỐNG (v0.4.7)</h6>
+                <h6 class="modal-title fw-bold text-info"><i class="bi bi-gear-fill me-1"></i> BẢNG QUẢN TRỊ HỆ THỐNG (v0.4.9)</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
@@ -736,8 +1006,10 @@ let alviewerDataMap = {};
 let sessionNames = JSON.parse(localStorage.getItem("alchat_session_names") || "{}");
 let isGenerating = false;
 
-// Trạng thái phục vụ chỉnh sửa tin nhắn
+// Trạng thái phục vụ chỉnh sửa tin nhắn & xem preview
 let editingMessageIndex = null; 
+let currentCodeForModal = "";
+let currentPreviewCode = "";
 
 let currentTheme = localStorage.getItem("alchat_theme") || "dark";
 document.documentElement.setAttribute("data-theme", currentTheme);
@@ -747,6 +1019,7 @@ function getActiveApiKey() {
     return groqApiKeys[currentKeyIndex % groqApiKeys.length];
 }
 
+/* Quy tắc System Prompt bao gồm quy định AI dùng backticks khi viết code */
 function getFullSystemPrompt() {
     const refKeys = Object.keys(alviewerDataMap).join(", ");
     const viewerSystemRule = `
@@ -755,6 +1028,12 @@ function getFullSystemPrompt() {
 2. When the user asks or requests information related to the above references, you MUST provide the full link format:
 https://hothiptv.github.io/AlChat/alviewer?ReferenceKey
 3. Do not invent non-existent references.
+
+[MANDATORY CODE FORMATTING INSTRUCTIONS]:
+When generating ANY source code, scripts, programs, HTML, CSS, JavaScript, or snippets:
+1. ALWAYS format and wrap code using triple backticks (\`\`\`) specifying the programming language (e.g., \`\`\`html, \`\`\`javascript, \`\`\`css, \`\`\`python, \`\`\`cpp, etc.).
+2. For complete web pages or HTML apps, provide full executable code starting with <!DOCTYPE html> wrapped inside \`\`\`html ... \`\`\`.
+3. This backtick structure allows AlChat to display dedicated interactive code frames, view code popups, copy buttons, and live HTML web preview screens for the user.
 `;
     let result = adminSystemPrompt;
     if (customUserPrompt.trim()) {
@@ -810,6 +1089,18 @@ const adminSaveAlert = document.getElementById('adminSaveAlert');
 const viewerManagerList = document.getElementById('viewerManagerList');
 const addViewerDataBtn = document.getElementById('addViewerDataBtn');
 
+// Modal xem code & Màn hình preview
+const codeViewerModal = new bootstrap.Modal(document.getElementById('codeViewerModal'));
+const modalCodeLang = document.getElementById('modalCodeLang');
+const modalCodeContainer = document.getElementById('modalCodeContainer');
+const modalCopyCodeBtn = document.getElementById('modalCopyCodeBtn');
+
+const webPreviewScreen = document.getElementById('webPreviewScreen');
+const webPreviewIframe = document.getElementById('webPreviewIframe');
+const previewReloadBtn = document.getElementById('previewReloadBtn');
+const previewNewTabBtn = document.getElementById('previewNewTabBtn');
+const previewCloseBtn = document.getElementById('previewCloseBtn');
+
 /* VisualViewport Mobile Keyboard Fix */
 if (window.visualViewport) {
     const onResize = () => {
@@ -850,6 +1141,218 @@ menuToggleBtn.addEventListener('click', toggleSidebar);
 closeSidebarBtn.addEventListener('click', toggleSidebar);
 overlay.addEventListener('click', toggleSidebar);
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/* Parse đầy đủ Markdown chuẩn bao gồm: Tables, Blockquotes (>), Headings (# -> ######), Bold/Italic, Lists, HR, Links, Inline Code */
+function parseFullMarkdown(str) {
+    if (!str) return "";
+    if (typeof marked !== 'undefined' && marked.parse) {
+        try {
+            return marked.parse(str, { gfm: true, breaks: true });
+        } catch (e) {
+            console.error("Marked parsing error:", e);
+        }
+    }
+    
+    // Fallback parser nếu marked chưa load xong
+    let text = escapeHtml(str);
+    text = text.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
+    text = text.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
+    text = text.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+    text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    text = text.replace(/^&gt; (.*$)/gim, '<blockquote>$1</blockquote>');
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+    text = text.replace(/~~(.*?)~~/g, '<del>$1</del>');
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return text.replace(/\n/g, '<br>');
+}
+
+function copyToClipboard(text, btnElement) {
+    const doFeedback = () => {
+        if (btnElement) {
+            const orig = btnElement.innerHTML;
+            btnElement.innerHTML = `<i class="bi bi-check2 me-1"></i> Đã chép!`;
+            btnElement.classList.add("btn-success");
+            setTimeout(() => {
+                btnElement.innerHTML = orig;
+                btnElement.classList.remove("btn-success");
+            }, 2000);
+        }
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(doFeedback).catch(() => fallbackCopy(text, doFeedback));
+    } else {
+        fallbackCopy(text, doFeedback);
+    }
+}
+
+function fallbackCopy(text, callback) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        if (callback) callback();
+    } catch (err) {}
+    document.body.removeChild(textArea);
+}
+
+/* Hiển thị Code Modal read-only */
+function openCodeModal(lang, code) {
+    currentCodeForModal = code;
+    modalCodeLang.innerText = (lang || "CODE").toUpperCase();
+    modalCodeContainer.innerText = code;
+    codeViewerModal.show();
+}
+
+modalCopyCodeBtn.addEventListener("click", () => {
+    copyToClipboard(currentCodeForModal, modalCopyCodeBtn);
+});
+
+/* Hiển thị Web Preview ở màn hình UI riêng */
+function openWebPreview(htmlCode) {
+    currentPreviewCode = htmlCode;
+    webPreviewIframe.srcdoc = htmlCode;
+    webPreviewScreen.classList.add("show");
+}
+
+previewReloadBtn.addEventListener("click", () => {
+    webPreviewIframe.srcdoc = currentPreviewCode;
+});
+
+previewNewTabBtn.addEventListener("click", () => {
+    if (!currentPreviewCode) return;
+    const blob = new Blob([currentPreviewCode], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+});
+
+previewCloseBtn.addEventListener("click", () => {
+    webPreviewScreen.classList.remove("show");
+    webPreviewIframe.srcdoc = "";
+});
+
+/* Tạo thẻ Khung Code với Nút Xem Code, Sao Chép và Chạy Web */
+function createCodeBlockCard(lang, codeContent) {
+    const card = document.createElement("div");
+    card.className = "code-block-card";
+    
+    const cleanLang = (lang || "code").trim().toLowerCase();
+    const isHtml = cleanLang === "html" || cleanLang === "htm" || 
+                   codeContent.trim().toLowerCase().startsWith("<!doctype html") || 
+                   codeContent.trim().toLowerCase().startsWith("<html");
+                   
+    const langDisplay = (cleanLang || "CODE").toUpperCase();
+    const snippetLines = codeContent.trim().split('\n').slice(0, 3).join('\n');
+
+    card.innerHTML = `
+        <div class="code-card-header">
+            <span class="code-lang-badge"><i class="bi bi-code-slash me-1"></i>${langDisplay}</span>
+            <div class="code-card-actions">
+                ${isHtml ? `<button class="btn btn-sm btn-success run-html-btn me-1"><i class="bi bi-play-fill me-1"></i>Chạy Trang Web</button>` : ''}
+                <button class="btn btn-sm btn-outline-light view-code-btn me-1"><i class="bi bi-eye-fill me-1"></i>Xem Code</button>
+                <button class="btn btn-sm btn-outline-light copy-code-btn"><i class="bi bi-clipboard me-1"></i>Sao chép</button>
+            </div>
+        </div>
+        <pre class="code-card-preview"><code>${escapeHtml(snippetLines)}</code></pre>
+    `;
+
+    const viewBtn = card.querySelector(".view-code-btn");
+    const copyBtn = card.querySelector(".copy-code-btn");
+    const runBtn = card.querySelector(".run-html-btn");
+
+    if (viewBtn) {
+        viewBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openCodeModal(langDisplay, codeContent);
+        });
+    }
+
+    if (copyBtn) {
+        copyBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            copyToClipboard(codeContent, copyBtn);
+        });
+    }
+
+    if (runBtn) {
+        runBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openWebPreview(codeContent);
+        });
+    }
+
+    return card;
+}
+
+/* Parse nội dung tin nhắn hỗ trợ Markdown backticks & Full Markdown (Tables, Blockquotes, Headings, List) */
+function renderFormattedMessageContent(container, rawText, isAssistant) {
+    container.innerHTML = "";
+    if (!rawText) return;
+    
+    if (!rawText.includes("```")) {
+        const textSpan = document.createElement("div");
+        textSpan.className = "msg-text-block";
+        textSpan.innerHTML = parseFullMarkdown(rawText);
+        container.appendChild(textSpan);
+        return;
+    }
+
+    const codeBlockRegex = /```([a-zA-Z0-9_+-]*)\r?\n?([\s\S]*?)(?:```|$)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = codeBlockRegex.exec(rawText)) !== null) {
+        const textBefore = rawText.slice(lastIndex, match.index);
+        if (textBefore.trim()) {
+            const textDiv = document.createElement("div");
+            textDiv.className = "msg-text-block";
+            textDiv.innerHTML = parseFullMarkdown(textBefore);
+            container.appendChild(textDiv);
+        }
+
+        const lang = match[1];
+        const codeContent = match[2];
+
+        if (match[0].startsWith("```")) {
+            const codeCard = createCodeBlockCard(lang, codeContent);
+            container.appendChild(codeCard);
+        }
+
+        lastIndex = codeBlockRegex.lastIndex;
+        if (match.index === codeBlockRegex.lastIndex) {
+            codeBlockRegex.lastIndex++;
+        }
+    }
+
+    const textAfter = rawText.slice(lastIndex);
+    if (textAfter.trim()) {
+        const textDiv = document.createElement("div");
+        textDiv.className = "msg-text-block";
+        textDiv.innerHTML = parseFullMarkdown(textAfter);
+        container.appendChild(textDiv);
+    }
+}
+
+/* Context Menu handling */
 let selectedMsgIndex = -1;
 let selectedMsgRole = "";
 
@@ -895,12 +1398,11 @@ document.addEventListener("click", () => {
 window.handleCopyMsg = function(index) {
     const msg = sessions[activeSessionId][index];
     if (msg && msg.content) {
-        navigator.clipboard.writeText(msg.content);
+        copyToClipboard(msg.content);
     }
     msgContextMenu.style.display = "none";
 };
 
-// Sửa lỗi logic Edit message: Load nội dung vào khung nhập liệu và lưu lại index đang chỉnh sửa
 window.handleEditMsg = function(index) {
     const msg = sessions[activeSessionId][index];
     if (msg) {
@@ -999,7 +1501,7 @@ function renderSidebar() {
         let pressTimer = null;
         let isLongPress = false;
 
-        const startPress = (e) => {
+        const startPress = () => {
             isLongPress = false;
             pressTimer = setTimeout(() => {
                 isLongPress = true;
@@ -1021,7 +1523,7 @@ function renderSidebar() {
             showSessionOptions(sId, titleText);
         });
 
-        div.addEventListener("click", (e) => {
+        div.addEventListener("click", () => {
             if (!isLongPress) {
                 switchSession(sId);
             }
@@ -1072,7 +1574,7 @@ function renderChat(isNewMessageAdded = false) {
             <div class="welcome-screen">
                 <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="welcome-logo" alt="AlChat Logo">
                 <div class="welcome-title">AlChat</div>
-                <div class="small text-muted mt-1">v0.4.7 Beta</div>
+                <div class="small text-muted mt-1">v0.4.9 Beta</div>
             </div>
         `;
         return;
@@ -1091,7 +1593,10 @@ function renderChat(isNewMessageAdded = false) {
             touchTimer = setTimeout(() => showContextMenu(e.touches[0] || e, idx, msg.role), 500);
         }, {passive: true});
         div.addEventListener("touchend", () => clearTimeout(touchTimer));
-        div.addEventListener("click", (e) => showContextMenu(e, idx, msg.role));
+        div.addEventListener("click", (e) => {
+            if (e.target.closest('.code-block-card') || e.target.closest('button')) return;
+            showContextMenu(e, idx, msg.role);
+        });
         div.addEventListener("contextmenu", (e) => showContextMenu(e, idx, msg.role));
 
         let textContent = msg.content;
@@ -1107,7 +1612,7 @@ function renderChat(isNewMessageAdded = false) {
             textContent = textContent.replace(urlRegex, "").trim();
         }
 
-        div.innerText = textContent;
+        renderFormattedMessageContent(div, textContent, msg.role === "assistant");
 
         if (linksFound.length > 0 && msg.role === "assistant") {
             const badgeContainer = document.createElement("div");
@@ -1388,13 +1893,11 @@ async function sendMessage() {
 
     sessions[activeSessionId][0].content = getFullSystemPrompt();
 
-    // Xử lý chỉnh sửa tin nhắn cũ: Cắt bớt lịch sử từ vị trí cần sửa (xóa nội dung cũ và câu trả lời AI theo sau) trước khi push tin mới
     if (editingMessageIndex !== null && sessions[activeSessionId][editingMessageIndex]) {
         sessions[activeSessionId] = sessions[activeSessionId].slice(0, editingMessageIndex);
         editingMessageIndex = null; 
     }
 
-    // Thêm tin nhắn mới vào phiên chat
     sessions[activeSessionId].push({ role: "user", content: text });
     saveLocalSessions();
     renderChat(true);
