@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AlChat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --panel-bg: #161b22;
+            --card-bg: #1f242d;
+            --border-color: #2e3440;
+            --accent-color: #2563eb;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --neon-blue: #00f2fe;
+        }
+
+        *, *::before, *::after {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -webkit-touch-callout: none !important;
+            box-sizing: border-box;
+        }
+
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .app-viewport {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            padding: 12px;
+            gap: 12px;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            height: 100%;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-brand-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--neon-blue);
+            object-fit: cover;
+        }
+
+        .sidebar-brand-title {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            color: var(--text-sub);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .session-item:hover {
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .session-item.active {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 85px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            will-change: transform;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .welcome-screen {
+            margin: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: floatUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .welcome-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+            margin-bottom: 12px;
+        }
+
+        .welcome-title {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 16px;
+            max-width: 82%;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            position: relative;
+            cursor: pointer;
+            transform: translateZ(0);
+        }
+
+        .msg-animate {
+            animation: fadeInMsg 0.25s ease-out forwards;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-msg {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-msg {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            align-self: flex-start;
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .thinking-bubble {
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            padding: 10px 16px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .thinking-dots span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--neon-blue);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .link-badge-container {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .link-badge {
+            background-color: rgba(0, 242, 254, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s ease;
+        }
+
+        .link-badge:hover {
+            background-color: var(--neon-blue);
+            color: #000000;
+        }
+
+        /* Input Floating */
+        .input-floating-wrapper {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+            transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .input-area {
+            background-color: rgba(31, 36, 45, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 6px 8px 6px 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(0, 242, 254, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .input-area:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6), 0 0 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .custom-input {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-main) !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 15px;
+            padding: 6px 0;
+        }
+
+        /* Nút gửi hiệu ứng xuất hiện siêu mượt */
+        .btn-send-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 0;
+            margin-left: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .btn-send-icon.show-btn {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            width: 42px;
+            margin-left: 4px;
+        }
+
+        .btn-send-icon:disabled {
+            background-color: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .msg-context-menu {
+            position: fixed;
+            z-index: 1000;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            padding: 6px;
+            display: none;
+            min-width: 140px;
+            animation: popIn 0.15s ease-out;
+        }
+
+        .msg-context-menu button {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 8px 12px;
+            text-align: left;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s ease;
+        }
+
+        .msg-context-menu button:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 20px;
+            padding: 0 8px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            z-index: 90;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header, .modal-footer {
+            border-color: var(--border-color);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        .viewer-item-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .app-viewport { padding: 6px; gap: 0; }
+            .sidebar { position: fixed; top: 6px; left: 6px; bottom: 6px; transform: translateX(-105%); width: 280px; }
+            .sidebar.show { transform: translateX(0); }
+            .overlay.show { display: block; }
+            .menu-toggle { display: block; }
+            .message { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div id="msgContextMenu" class="msg-context-menu"></div>
+
+<div class="app-viewport">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="sidebar-brand-img" alt="Logo">
+            <span class="sidebar-brand-title">AlChat</span>
+            <button class="btn-close btn-close-white ms-auto d-md-none" id="closeSidebarBtn"></button>
+        </div>
+
+        <button class="btn btn-primary w-100 mb-2" id="newChatBtn">
+            <i class="bi bi-plus-lg me-1"></i> Đoạn chat mới (<span id="sessionCount">1</span>/5)
+        </button>
+
+        <button class="btn btn-outline-light w-100 mb-3" id="userSettingsBtn">
+            <i class="bi bi-gear-fill me-1"></i> Cài đặt cá nhân
+        </button>
+
+        <div id="sessionList" style="flex: 1; overflow-y: auto;"></div>
+    </div>
+
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <button class="menu-toggle" id="menuToggleBtn"><i class="bi bi-list"></i></button>
+                <h5 class="m-0 font-weight-bold text-light"><i class="bi bi-robot me-1"></i> AlChat</h5>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-danger btn-sm" id="clearChatBtn" title="Xóa chat"><i class="bi bi-trash"></i></button>
+            </div>
+        </div>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="input-floating-wrapper" id="inputWrapper">
+            <div class="input-area">
+                <input type="text" id="userInput" class="form-control custom-input" placeholder="Đang tải, vui lòng đợi..." disabled autocomplete="off">
+                <button class="btn-send-icon" id="sendBtn" title="Gửi"><i class="bi bi-arrow-return-left"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cài Đặt Người Dùng -->
+<div class="modal fade" id="userSettingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold text-light"><i class="bi bi-sliders me-2"></i> CÀI ĐẶT NGƯỜI DÙNG</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Bổ sung System Prompt cá nhân:</label>
+                    <textarea id="customUserPromptInput" class="form-control" rows="4" placeholder="Nhập yêu cầu bổ sung cho AI (Ví dụ: Trả lời ngắn gọn, xưng hô bạn - tôi...)"></textarea>
+                    <div class="form-text text-secondary small mt-2">
+                        * System chính của hệ thống và các quy tắc AlViewer vẫn sẽ được duy trì tự động.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" id="saveUserSettingsBtn">Lưu Cài Đặt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Admin (/admin-0904) -->
+<div class="modal fade" id="adminConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold text-info"><i class="bi bi-gear-fill me-1"></i> BẢNG QUẢN TRỊ HỆ THỐNG</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Groq API Key:</label>
+                    <input type="password" id="adminApiKeyInput" class="form-control" placeholder="gsk_...">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">AI Model:</label>
+                    <select id="adminModelSelect" class="form-select">
+                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+                        <option value="openai/gpt-oss-120b">OpenAI 120B Custom</option>
+                        <option value="llama3-70b-8192">Llama 3 70B</option>
+                        <option value="mixtral-8x7b-32768">Mixtral 8x7b</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">System Prompt (Chính):</label>
+                    <textarea id="adminSystemPromptInput" class="form-control" rows="3"></textarea>
+                </div>
+
+                <hr class="border-secondary my-4">
+                <h6 class="fw-bold text-warning mb-3"><i class="bi bi-folder-fill me-1"></i> QUẢN LÝ ALVIEWER</h6>
+                
+                <div class="bg-dark p-3 rounded border border-secondary mb-3">
+                    <div class="mb-2">
+                        <label class="form-label small text-info mb-1 fw-bold">Từ khóa Tham Chiếu (?ThamChieu):</label>
+                        <input type="text" id="newRefKey" class="form-control form-control-sm" placeholder="VD: hi">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small text-info mb-1 fw-bold">Nội dung chi tiết:</label>
+                        <textarea id="newRefContent" class="form-control form-control-sm" rows="5" placeholder='title = "Xin chào"&#10;Nội dung hiển thị...'></textarea>
+                    </div>
+                    <button type="button" class="btn btn-success btn-sm w-100 fw-bold" id="addViewerDataBtn">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm / Cập Nhật Tham Chiếu
+                    </button>
+                </div>
+
+                <div id="viewerManagerList"></div>
+                <div id="adminSaveAlert" class="small text-center mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" id="saveAdminConfigBtn">Lưu Cấu Hình Lên Cloud</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
+  authDomain: "dataan-d19b7.firebaseapp.com",
+  databaseURL: "https://dataan-d19b7-default-rtdb.firebaseio.com",
+  projectId: "dataan-d19b7",
+  storageBucket: "dataan-d19b7.firebasestorage.app",
+  messagingSenderId: "634110626824",
+  appId: "1:634110626824:web:903a5181db232369f495bd",
+  measurementId: "G-1LK1W3FPG3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let groqApiKey = "";
+let modelName = "llama-3.3-70b-versatile";
+let adminSystemPrompt = "Bạn là trợ lý AI thông minh, hỗ trợ người dùng bằng tiếng Việt.";
+let customUserPrompt = localStorage.getItem("alchat_custom_user_prompt") || "";
+let alviewerDataMap = {};
+let sessionNames = JSON.parse(localStorage.getItem("alchat_session_names") || "{}");
+let isGenerating = false;
+
+function getFullSystemPrompt() {
+    const refKeys = Object.keys(alviewerDataMap).join(", ");
+    const viewerSystemRule = `
+[QUY TẮC BẮT BUỘC VỀ LIÊN KẾT ALVIEWER]:
+1. Các từ khóa tham chiếu AlViewer hiện có: [${refKeys || 'chưa có'}].
+2. Khi người dùng hỏi hoặc yêu cầu thông tin liên quan đến các tham chiếu trên, bạn BẮT BUỘC phải gửi đường dẫn dạng đầy đủ:
+https://hothiptv.github.io/AlChat/alviewer?TenThamChieu
+3. Không tự ý bịa đặt tham chiếu chưa tồn tại.
+`;
+    let result = adminSystemPrompt;
+    if (customUserPrompt.trim()) {
+        result += "\n\n[GHI CHÚ BỔ SUNG TỪ NGƯỜI DÙNG]:\n" + customUserPrompt.trim();
+    }
+    return result + "\n" + viewerSystemRule;
+}
+
+let activeSessionId = localStorage.getItem("alchat_active_session") || "session_1";
+let sessions = {};
+
+try {
+    const localData = localStorage.getItem("alchat_sessions");
+    if (localData) sessions = JSON.parse(localData);
+} catch (e) {
+    sessions = {};
+}
+
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", (e) => {
+    if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || (e.ctrlKey && e.keyCode === 85)) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+const overlay = document.getElementById('overlay');
+const sidebar = document.getElementById('sidebar');
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const newChatBtn = document.getElementById('newChatBtn');
+const clearChatBtn = document.getElementById('clearChatBtn');
+const msgContextMenu = document.getElementById('msgContextMenu');
+const inputWrapper = document.getElementById('inputWrapper');
+
+const userSettingsModal = new bootstrap.Modal(document.getElementById('userSettingsModal'));
+const userSettingsBtn = document.getElementById('userSettingsBtn');
+const customUserPromptInput = document.getElementById('customUserPromptInput');
+const saveUserSettingsBtn = document.getElementById('saveUserSettingsBtn');
+
+const adminModal = new bootstrap.Modal(document.getElementById('adminConfigModal'));
+const adminApiKeyInput = document.getElementById('adminApiKeyInput');
+const adminModelSelect = document.getElementById('adminModelSelect');
+const adminSystemPromptInput = document.getElementById('adminSystemPromptInput');
+const saveAdminConfigBtn = document.getElementById('saveAdminConfigBtn');
+const adminSaveAlert = document.getElementById('adminSaveAlert');
+const viewerManagerList = document.getElementById('viewerManagerList');
+const addViewerDataBtn = document.getElementById('addViewerDataBtn');
+
+/* SỬA LỖI ĐẨY WEB TRÊN MOBILE (Chuẩn VisualViewport) */
+if (window.visualViewport) {
+    const onResize = () => {
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+        if (keyboardHeight > 100) {
+            const bottomOffset = keyboardHeight - (window.innerHeight - window.visualViewport.offsetTop - window.visualViewport.height);
+            inputWrapper.style.transform = `translateY(-${Math.max(0, bottomOffset)}px)`;
+        } else {
+            inputWrapper.style.transform = `translateY(0px)`;
+        }
+    };
+    window.visualViewport.addEventListener("resize", onResize);
+    window.visualViewport.addEventListener("scroll", onResize);
+}
+
+/* HIỆU ỨNG NÚT GỬI & XỬ LÝ FOCUS/BLUR */
+function updateSendButtonState() {
+    if (userInput.value.trim().length > 0) {
+        sendBtn.classList.add("show-btn");
+    } else {
+        sendBtn.classList.remove("show-btn");
+    }
+}
+
+userInput.addEventListener("input", updateSendButtonState);
+userInput.addEventListener("focus", updateSendButtonState);
+userInput.addEventListener("blur", () => {
+    if (!userInput.value.trim()) {
+        sendBtn.classList.remove("show-btn");
+    }
+});
+
+function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+}
+
+menuToggleBtn.addEventListener('click', toggleSidebar);
+closeSidebarBtn.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', toggleSidebar);
+
+let selectedMsgIndex = -1;
+let selectedMsgRole = "";
+
+function showContextMenu(e, index, role) {
+    e.preventDefault();
+    e.stopPropagation();
+    selectedMsgIndex = index;
+    selectedMsgRole = role;
+
+    msgContextMenu.innerHTML = "";
+    if (role === "user") {
+        msgContextMenu.innerHTML = `
+            <button onclick="window.handleEditMsg(${index})"><i class="bi bi-pencil-square"></i> Chỉnh sửa</button>
+            <button onclick="window.handleCopyMsg(${index})"><i class="bi bi-copy"></i> Sao chép</button>
+            <button onclick="window.handleRegenerateFromUser(${index})"><i class="bi bi-lightning-charge"></i> Tạo lại</button>
+        `;
+    } else {
+        msgContextMenu.innerHTML = `
+            <button onclick="window.handleCopyMsg(${index})"><i class="bi bi-copy"></i> Sao chép</button>
+            <button onclick="window.handleRegenerateAI(${index})"><i class="bi bi-arrow-clockwise"></i> Tạo lại</button>
+        `;
+    }
+
+    const posX = Math.min(e.clientX || (e.touches && e.touches[0].clientX) || 10, window.innerWidth - 160);
+    const posY = Math.min(e.clientY || (e.touches && e.touches[0].clientY) || 10, window.innerHeight - 150);
+
+    msgContextMenu.style.left = `${posX}px`;
+    msgContextMenu.style.top = `${posY}px`;
+    msgContextMenu.style.display = "block";
+}
+
+document.addEventListener("click", () => {
+    msgContextMenu.style.display = "none";
+});
+
+window.handleCopyMsg = function(index) {
+    const msg = sessions[activeSessionId][index];
+    if (msg && msg.content) {
+        navigator.clipboard.writeText(msg.content);
+    }
+    msgContextMenu.style.display = "none";
+};
+
+window.handleEditMsg = function(index) {
+    const msg = sessions[activeSessionId][index];
+    if (msg) {
+        userInput.value = msg.content;
+        updateSendButtonState();
+        userInput.focus();
+    }
+    msgContextMenu.style.display = "none";
+};
+
+window.handleRegenerateFromUser = function(index) {
+    msgContextMenu.style.display = "none";
+    if (isGenerating) return;
+    sessions[activeSessionId] = sessions[activeSessionId].slice(0, index + 1);
+    saveLocalSessions();
+    renderChat();
+    triggerAICompletion();
+};
+
+window.handleRegenerateAI = function(index) {
+    msgContextMenu.style.display = "none";
+    if (isGenerating) return;
+    sessions[activeSessionId] = sessions[activeSessionId].slice(0, index);
+    saveLocalSessions();
+    renderChat();
+    triggerAICompletion();
+};
+
+async function initApp() {
+    try {
+        const docRef = doc(db, "alchat_settings", "config");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            groqApiKey = data.apiKey ? data.apiKey.trim() : "";
+            if (data.modelName) modelName = data.modelName.trim();
+            if (data.systemPrompt) adminSystemPrompt = data.systemPrompt.trim();
+            if (data.alviewerData) alviewerDataMap = data.alviewerData;
+        }
+
+        userInput.disabled = false;
+        userInput.placeholder = "Nhập tin nhắn...";
+
+        const fullPrompt = getFullSystemPrompt();
+        if (!sessions[activeSessionId]) {
+            sessions[activeSessionId] = [{ role: "system", content: fullPrompt }];
+        } else {
+            if (sessions[activeSessionId][0] && sessions[activeSessionId][0].role === "system") {
+                sessions[activeSessionId][0].content = fullPrompt;
+            } else {
+                sessions[activeSessionId].unshift({ role: "system", content: fullPrompt });
+            }
+        }
+
+        saveLocalSessions();
+        renderSidebar();
+        renderChat();
+
+    } catch (err) {
+        console.error("Lỗi Firestore:", err);
+        userInput.placeholder = "Lỗi kết nối CSDL!";
+    }
+}
+
+function saveLocalSessions() {
+    try {
+        localStorage.setItem("alchat_sessions", JSON.stringify(sessions));
+        localStorage.setItem("alchat_active_session", activeSessionId);
+        localStorage.setItem("alchat_session_names", JSON.stringify(sessionNames));
+    } catch (e) {}
+}
+
+/* ẤN GIỮ CHỈNH SỬA TÊN HOẶC XÓA ĐOẠN CHAT */
+function renderSidebar() {
+    const sessionList = document.getElementById("sessionList");
+    if (!sessionList) return;
+    const sessionKeys = Object.keys(sessions);
+    document.getElementById("sessionCount").innerText = sessionKeys.length;
+
+    sessionList.innerHTML = "";
+    sessionKeys.forEach((sId, index) => {
+        const div = document.createElement("div");
+        div.className = `session-item ${sId === activeSessionId ? 'active' : ''}`;
+        
+        const titleText = sessionNames[sId] || `Đoạn chat #${index + 1}`;
+        div.innerText = titleText;
+
+        let pressTimer = null;
+
+        const startPress = (e) => {
+            pressTimer = setTimeout(() => showSessionOptions(sId, titleText), 600);
+        };
+
+        const cancelPress = () => {
+            if (pressTimer) clearTimeout(pressTimer);
+        };
+
+        div.addEventListener("touchstart", startPress);
+        div.addEventListener("touchend", cancelPress);
+        div.addEventListener("mousedown", startPress);
+        div.addEventListener("mouseup", cancelPress);
+        div.addEventListener("mouseleave", cancelPress);
+        div.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            showSessionOptions(sId, titleText);
+        });
+
+        div.onclick = (e) => {
+            if (!pressTimer) switchSession(sId);
+        };
+
+        sessionList.appendChild(div);
+    });
+}
+
+function showSessionOptions(sId, currentTitle) {
+    const action = confirm(`Bạn muốn làm gì với "${currentTitle}"?\n\n- Nhấn OK để ĐỔI TÊN\n- Nhấn CANCEL để lựa chọn XÓA`);
+    if (action) {
+        const newTitle = prompt("Nhập tên mới cho đoạn chat:", currentTitle);
+        if (newTitle && newTitle.trim()) {
+            sessionNames[sId] = newTitle.trim();
+            saveLocalSessions();
+            renderSidebar();
+        }
+    } else {
+        if (confirm(`Bạn có chắc chắn muốn XÓA "${currentTitle}"?`)) {
+            delete sessions[sId];
+            delete sessionNames[sId];
+            const remainingKeys = Object.keys(sessions);
+            if (remainingKeys.length === 0) {
+                const newId = "session_" + Date.now();
+                sessions[newId] = [{ role: "system", content: getFullSystemPrompt() }];
+                activeSessionId = newId;
+            } else if (sId === activeSessionId) {
+                activeSessionId = remainingKeys[0];
+            }
+            saveLocalSessions();
+            renderSidebar();
+            renderChat();
+        }
+    }
+}
+
+/* RENDER CHAT CHỐNG GIẬT GIAO DIỆN */
+function renderChat(isNewMessageAdded = false) {
+    const chatBox = document.getElementById("chatBox");
+    if (!chatBox) return;
+    
+    chatBox.innerHTML = "";
+    const currentMessages = sessions[activeSessionId] || [];
+
+    const displayMessages = currentMessages.filter(m => m.role !== "system");
+
+    if (displayMessages.length === 0) {
+        chatBox.innerHTML = `
+            <div class="welcome-screen">
+                <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="welcome-logo" alt="AlChat Logo">
+                <div class="welcome-title">AlChat</div>
+            </div>
+        `;
+        return;
+    }
+
+    currentMessages.forEach((msg, idx) => {
+        if (msg.role === "system") return;
+
+        const div = document.createElement("div");
+        const isLastMsg = (idx === currentMessages.length - 1);
+        
+        div.className = `message ${msg.role === "user" ? "user-msg" : "ai-msg"} ${isNewMessageAdded && isLastMsg ? 'msg-animate' : ''}`;
+
+        let touchTimer = null;
+        div.addEventListener("touchstart", (e) => {
+            touchTimer = setTimeout(() => showContextMenu(e.touches[0] || e, idx, msg.role), 500);
+        });
+        div.addEventListener("touchend", () => clearTimeout(touchTimer));
+        div.addEventListener("contextmenu", (e) => showContextMenu(e, idx, msg.role));
+
+        let textContent = msg.content;
+        const linksFound = [];
+
+        if (msg.role === "assistant") {
+            const urlRegex = /(https?:\/\/[^\s\)]+|alviewer\?[^\s\)]+)/g;
+            let match;
+            while ((match = urlRegex.exec(textContent)) !== null) {
+                let cleanUrl = match[1].replace(/[\]\)\,\.\;]+$/, '');
+                linksFound.push(cleanUrl);
+            }
+            textContent = textContent.replace(urlRegex, "").trim();
+        }
+
+        div.innerText = textContent;
+
+        if (linksFound.length > 0 && msg.role === "assistant") {
+            const badgeContainer = document.createElement("div");
+            badgeContainer.className = "link-badge-container";
+
+            linksFound.forEach(url => {
+                let displayLabel = url;
+                let targetHref = url;
+
+                if (url.includes("alviewer?")) {
+                    const refKey = url.split("alviewer?")[1];
+                    displayLabel = `Xem: ?${refKey}`;
+                }
+
+                const linkBtn = document.createElement("a");
+                linkBtn.className = "link-badge";
+                linkBtn.href = targetHref;
+                linkBtn.target = "_self";
+                linkBtn.innerHTML = `<i class="bi bi-box-arrow-up-right"></i> ${displayLabel}`;
+
+                badgeContainer.appendChild(linkBtn);
+            });
+
+            div.appendChild(badgeContainer);
+        }
+
+        chatBox.appendChild(div);
+    });
+
+    requestAnimationFrame(() => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+function showThinkingBubble() {
+    const chatBox = document.getElementById("chatBox");
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.id = "thinkingBubble";
+    thinkingDiv.className = "thinking-bubble msg-animate";
+    thinkingDiv.innerHTML = `
+        <i class="bi bi-cpu-fill text-info"></i>
+        <span>Đang phân tích</span>
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+    `;
+    chatBox.appendChild(thinkingDiv);
+    requestAnimationFrame(() => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+function removeThinkingBubble() {
+    const bubble = document.getElementById("thinkingBubble");
+    if (bubble) bubble.remove();
+}
+
+function switchSession(sId) {
+    if (isGenerating) return;
+    activeSessionId = sId;
+    saveLocalSessions();
+    renderSidebar();
+    renderChat();
+    if (sidebar.classList.contains('show')) toggleSidebar();
+}
+
+newChatBtn.addEventListener("click", () => {
+    if (isGenerating) return;
+    const sessionKeys = Object.keys(sessions);
+    if (sessionKeys.length >= 5) {
+        alert("Đã đạt giới hạn tối đa 5 đoạn chat!");
+        return;
+    }
+    const newId = "session_" + Date.now();
+    sessions[newId] = [{ role: "system", content: getFullSystemPrompt() }];
+    activeSessionId = newId;
+    saveLocalSessions();
+    renderSidebar();
+    renderChat();
+    if (sidebar.classList.contains('show')) toggleSidebar();
+});
+
+clearChatBtn.addEventListener("click", () => {
+    if (isGenerating) return;
+    if (confirm("Xóa toàn bộ nội dung đoạn chat này?")) {
+        sessions[activeSessionId] = [{ role: "system", content: getFullSystemPrompt() }];
+        saveLocalSessions();
+        renderChat();
+    }
+});
+
+userSettingsBtn.addEventListener("click", () => {
+    customUserPromptInput.value = customUserPrompt;
+    userSettingsModal.show();
+    if (sidebar.classList.contains('show')) toggleSidebar();
+});
+
+saveUserSettingsBtn.addEventListener("click", () => {
+    customUserPrompt = customUserPromptInput.value.trim();
+    localStorage.setItem("alchat_custom_user_prompt", customUserPrompt);
+    
+    if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+        sessions[activeSessionId][0].content = getFullSystemPrompt();
+    }
+    saveLocalSessions();
+    userSettingsModal.hide();
+});
+
+function renderViewerManagerUI() {
+    viewerManagerList.innerHTML = "";
+    const keys = Object.keys(alviewerDataMap);
+    if (keys.length === 0) {
+        viewerManagerList.innerHTML = `<div class="text-secondary small italic text-center mb-2">Chưa có dữ liệu AlViewer nào.</div>`;
+        return;
+    }
+
+    keys.forEach(refKey => {
+        const rawText = alviewerDataMap[refKey] || "";
+        let titleDisplay = "Chưa thiết lập tiêu đề";
+        const titleMatch = rawText.match(/^title\s*=\s*["']?(.*?)["']?$/im);
+        if (titleMatch) titleDisplay = titleMatch[1];
+
+        const card = document.createElement("div");
+        card.className = "viewer-item-card";
+        card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-info text-dark fw-bold">?${refKey}</span>
+                <span class="small text-warning fw-bold text-truncate ms-2" style="max-width: 60%;">${titleDisplay}</span>
+                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="window.removeViewerRef('${refKey}')"><i class="bi bi-trash"></i> Xóa</button>
+            </div>
+            <textarea class="form-control form-control-sm mb-2" rows="3" id="edit_area_${refKey}">${rawText}</textarea>
+            <button type="button" class="btn btn-outline-light btn-sm w-100 py-0" onclick="window.updateViewerRef('${refKey}')">Lưu Thay Đổi</button>
+        `;
+        viewerManagerList.appendChild(card);
+    });
+}
+
+window.removeViewerRef = function(refKey) {
+    if (confirm(`Xóa tham chiếu ?${refKey}?`)) {
+        delete alviewerDataMap[refKey];
+        renderViewerManagerUI();
+    }
+};
+
+window.updateViewerRef = function(refKey) {
+    const updatedContent = document.getElementById(`edit_area_${refKey}`).value;
+    alviewerDataMap[refKey] = updatedContent;
+    alert(`Đã cập nhật nội dung cho ?${refKey}`);
+    renderViewerManagerUI();
+};
+
+addViewerDataBtn.addEventListener("click", () => {
+    const keyInput = document.getElementById("newRefKey");
+    const contentInput = document.getElementById("newRefContent");
+    
+    let refKey = keyInput.value.trim().replace(/^\?/, '').replace(/\s+/g, '');
+    let content = contentInput.value;
+
+    if (!refKey || !content) {
+        alert("Vui lòng nhập từ khóa tham chiếu và nội dung!");
+        return;
+    }
+
+    alviewerDataMap[refKey] = content;
+    keyInput.value = "";
+    contentInput.value = "";
+    renderViewerManagerUI();
+});
+
+async function triggerAICompletion() {
+    isGenerating = true;
+    userInput.disabled = true;
+    sendBtn.disabled = true;
+    showThinkingBubble();
+
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${groqApiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: modelName,
+                messages: sessions[activeSessionId],
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        removeThinkingBubble();
+
+        if (data.choices && data.choices[0]) {
+            const aiReply = data.choices[0].message.content;
+            sessions[activeSessionId].push({ role: "assistant", content: aiReply });
+            saveLocalSessions();
+            renderChat(true);
+        } else {
+            alert("Lỗi Groq API: " + (data.error?.message || "Không phản hồi"));
+        }
+    } catch (err) {
+        removeThinkingBubble();
+        alert("Lỗi kết nối: " + err.message);
+    } finally {
+        isGenerating = false;
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        updateSendButtonState();
+        userInput.focus();
+    }
+}
+
+async function sendMessage() {
+    if (isGenerating) return;
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    if (text === "/admin-0904") {
+        userInput.value = "";
+        userInput.blur();
+        updateSendButtonState();
+        adminApiKeyInput.value = groqApiKey;
+        adminModelSelect.value = modelName;
+        adminSystemPromptInput.value = adminSystemPrompt;
+        renderViewerManagerUI();
+        adminSaveAlert.innerText = "";
+        adminModal.show();
+        return;
+    }
+
+    if (!groqApiKey) {
+        alert("Hệ thống chưa được cấu hình API Key!");
+        return;
+    }
+
+    if (!sessions[activeSessionId]) {
+        sessions[activeSessionId] = [{ role: "system", content: getFullSystemPrompt() }];
+    }
+
+    sessions[activeSessionId][0].content = getFullSystemPrompt();
+    sessions[activeSessionId].push({ role: "user", content: text });
+    saveLocalSessions();
+    renderChat(true);
+
+    userInput.value = "";
+    userInput.blur();
+    updateSendButtonState();
+
+    await triggerAICompletion();
+}
+
+saveAdminConfigBtn.addEventListener("click", async () => {
+    const newKey = adminApiKeyInput.value.trim();
+    const newModel = adminModelSelect.value;
+    const newPrompt = adminSystemPromptInput.value.trim();
+
+    if (!newKey) {
+        alert("Vui lòng nhập API Key!");
+        return;
+    }
+
+    saveAdminConfigBtn.disabled = true;
+    adminSaveAlert.className = "small text-center mt-2 text-warning";
+    adminSaveAlert.innerText = "Đang lưu cấu hình lên CSDL...";
+
+    try {
+        const docRef = doc(db, "alchat_settings", "config");
+        await setDoc(docRef, {
+            apiKey: newKey,
+            modelName: newModel,
+            systemPrompt: newPrompt,
+            alviewerData: alviewerDataMap,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        groqApiKey = newKey;
+        modelName = newModel;
+        adminSystemPrompt = newPrompt;
+
+        const fullPrompt = getFullSystemPrompt();
+        if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+            sessions[activeSessionId][0].content = fullPrompt;
+        }
+
+        saveLocalSessions();
+
+        adminSaveAlert.className = "small text-center mt-2 text-success";
+        adminSaveAlert.innerText = "✓ Cập nhật thành công!";
+        setTimeout(() => adminModal.hide(), 1000);
+    } catch (err) {
+        adminSaveAlert.className = "small text-center mt-2 text-danger";
+        adminSaveAlert.innerText = "Lỗi khi lưu: " + err.message;
+    } finally {
+        saveAdminConfigBtn.disabled = false;
+    }
+});
+
+sendBtn.addEventListener("click", sendMessage);
+
+userInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+initApp();
+</script>
+</body>
+</html>
