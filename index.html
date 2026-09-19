@@ -7,8 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
-        /* CSS Variables for Dark / Light mode */
         [data-theme="dark"] {
             --bg-color: #0b0e14;
             --panel-bg: #161b22;
@@ -20,6 +20,7 @@
             --neon-blue: #00f2fe;
             --input-bg: rgba(31, 36, 45, 0.95);
             --code-bg: #0d1117;
+            --badge-bg: rgba(0, 242, 254, 0.12);
         }
 
         [data-theme="light"] {
@@ -33,6 +34,7 @@
             --neon-blue: #0284c7;
             --input-bg: rgba(255, 255, 255, 0.95);
             --code-bg: #f1f5f9;
+            --badge-bg: rgba(2, 132, 199, 0.12);
         }
 
         *, *::before, *::after {
@@ -40,11 +42,13 @@
             -webkit-user-select: none !important;
             -webkit-touch-callout: none !important;
             box-sizing: border-box;
+            touch-action: manipulation;
         }
 
         input, textarea, code, pre {
             user-select: text !important;
             -webkit-user-select: text !important;
+            touch-action: auto;
         }
 
         html, body {
@@ -101,6 +105,7 @@
             border-radius: 50%;
             border: 1px solid var(--neon-blue);
             object-fit: cover;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
         }
 
         .sidebar-brand-title {
@@ -122,7 +127,7 @@
             margin-left: auto;
         }
 
-        /* Main Chat View */
+        /* Main Chat Panel */
         .main-chat {
             flex: 1;
             display: flex;
@@ -181,12 +186,13 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 85px;
+            padding-bottom: 120px;
             display: flex;
             flex-direction: column;
             gap: 14px;
             will-change: transform;
             -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         .welcome-screen {
@@ -235,16 +241,53 @@
             position: relative;
             cursor: pointer;
             transform: translateZ(0);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .message:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
         }
 
-        /* Full Markdown Formatting Styling */
+        /* Full Markdown Formatting & Scrollable Tables */
         .msg-text-block {
             word-break: break-word;
+            max-width: 100%;
+        }
+
+        .table-responsive-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .msg-text-block table {
+            width: 100%;
+            min-width: 480px;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: var(--card-bg);
+            margin: 0;
+        }
+
+        .msg-text-block th, .msg-text-block td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            white-space: normal;
+        }
+
+        .msg-text-block th {
+            background-color: rgba(255, 255, 255, 0.08);
+            font-weight: 700;
+            color: var(--neon-blue);
+        }
+
+        .msg-text-block tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
         }
 
         .msg-text-block p {
@@ -284,33 +327,6 @@
             margin: 0;
         }
 
-        .msg-text-block table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0;
-            font-size: 14px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .msg-text-block th, .msg-text-block td {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            text-align: left;
-        }
-
-        .msg-text-block th {
-            background-color: rgba(255, 255, 255, 0.08);
-            font-weight: 700;
-            color: var(--neon-blue);
-        }
-
-        .msg-text-block tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-
         .msg-text-block ul, .msg-text-block ol {
             padding-left: 22px;
             margin: 8px 0;
@@ -345,6 +361,7 @@
         .msg-text-block a {
             color: var(--neon-blue);
             text-decoration: underline;
+            cursor: pointer;
         }
 
         .msg-animate {
@@ -376,7 +393,290 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* Code Block Card Component */
+        .msg-attached-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .msg-attached-pill {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        .thinking-bubble {
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            padding: 10px 16px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .spinner-ring {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 242, 254, 0.2);
+            border-top: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .thinking-dots span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--neon-blue);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Link Badge Buttons */
+        .link-badge-container {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(150, 150, 150, 0.25);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .link-badge {
+            background-color: var(--badge-bg);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            z-index: 5;
+        }
+
+        .link-badge:hover {
+            background-color: var(--neon-blue);
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Scroll to Bottom Floating Icon Button (No Container/Board) */
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 78px;
+            right: 20px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--input-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            color: var(--neon-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25), 0 0 12px rgba(0,242,254,0.15);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.85);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 30;
+        }
+
+        .scroll-bottom-btn.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .scroll-bottom-btn:hover {
+            background: var(--accent-color);
+            color: #ffffff;
+            transform: translateY(-2px) scale(1.08);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Attachment Chips */
+        .attached-files-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 4px 8px;
+            margin-bottom: 4px;
+        }
+
+        .file-chip {
+            background-color: var(--card-bg);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .file-chip .remove-file-btn {
+            cursor: pointer;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .input-floating-wrapper {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+            will-change: transform, opacity;
+        }
+
+        .input-floating-wrapper.slide-down {
+            transform: translateY(110px) !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .input-area {
+            background-color: var(--input-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 6px 8px 6px 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 15px rgba(0, 242, 254, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.25s ease;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-attach-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--neon-blue);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-attach-icon:hover {
+            background-color: var(--neon-blue);
+            color: #000;
+        }
+
+        .custom-input {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-main) !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 6px 0;
+            flex: 1;
+        }
+
+        .custom-input::placeholder {
+            color: var(--text-sub) !important;
+            opacity: 0.8;
+        }
+
+        .btn-send-icon {
+            width: 0;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-left: 0;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-send-icon.show-btn {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            width: 42px;
+            margin-left: 4px;
+        }
+
+        .btn-send-icon:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-send-icon:disabled {
+            background-color: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Code Cards & Web Preview */
         .code-block-card {
             background-color: var(--code-bg);
             border: 1px solid var(--border-color);
@@ -433,7 +733,6 @@
             pointer-events: none;
         }
 
-        /* Fullscreen Web Preview Screen */
         .web-preview-screen {
             position: fixed;
             top: 0;
@@ -488,154 +787,6 @@
             width: 100%;
             height: 100%;
             border: none;
-        }
-
-        .thinking-bubble {
-            align-self: flex-start;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-sub);
-            padding: 10px 16px;
-            border-radius: 16px;
-            border-bottom-left-radius: 4px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .thinking-dots span {
-            width: 6px;
-            height: 6px;
-            background-color: var(--neon-blue);
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 1.2s infinite ease-in-out;
-        }
-
-        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes pulse {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-            40% { transform: scale(1.2); opacity: 1; }
-        }
-
-        .link-badge-container {
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px dashed rgba(150, 150, 150, 0.25);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .link-badge {
-            background-color: rgba(0, 242, 254, 0.1);
-            color: var(--neon-blue);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.25s ease;
-        }
-
-        .link-badge:hover {
-            background-color: var(--neon-blue);
-            color: #000000;
-            transform: translateY(-2px);
-        }
-
-        /* Floating Input */
-        .input-floating-wrapper {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 20;
-            transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
-            will-change: transform;
-        }
-
-        .input-area {
-            background-color: var(--input-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 28px;
-            padding: 6px 8px 6px 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 15px rgba(0, 242, 254, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.25s ease;
-        }
-
-        .input-area:focus-within {
-            border-color: var(--accent-color);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.25), 0 0 20px rgba(37, 99, 235, 0.2);
-        }
-
-        .custom-input {
-            background: transparent !important;
-            border: none !important;
-            color: var(--text-main) !important;
-            outline: none !important;
-            box-shadow: none !important;
-            font-size: 15px;
-            font-weight: 500;
-            padding: 6px 0;
-        }
-
-        .custom-input::placeholder {
-            color: var(--text-sub) !important;
-            opacity: 0.8;
-        }
-
-        .btn-send-icon {
-            width: 0;
-            height: 42px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-            opacity: 0;
-            transform: scale(0.5);
-            pointer-events: none;
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-left: 0;
-            padding: 0;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-send-icon.show-btn {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-            width: 42px;
-            margin-left: 4px;
-        }
-
-        .btn-send-icon:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-send-icon:disabled {
-            background-color: #334155;
-            color: #64748b;
-            cursor: not-allowed;
-            box-shadow: none;
         }
 
         .msg-context-menu {
@@ -739,6 +890,7 @@
             .overlay.show { display: block; }
             .menu-toggle { display: block; }
             .message { max-width: 92%; }
+            .scroll-bottom-btn { bottom: 74px; right: 14px; }
         }
     </style>
 </head>
@@ -747,7 +899,10 @@
 <div class="overlay" id="overlay"></div>
 <div id="msgContextMenu" class="msg-context-menu"></div>
 
-<!-- Màn hình Chạy Trang Web (Web Preview) -->
+<!-- Hidden File Input (Non-image documents/code) -->
+<input type="file" id="documentFileInput" accept=".txt,.json,.js,.html,.css,.md,.csv,.py,.java,.cpp,.c,.h,.ts,.pdf,.doc,.docx" multiple style="display: none;">
+
+<!-- Web Preview Screen -->
 <div class="web-preview-screen" id="webPreviewScreen">
     <div class="web-preview-topbar">
         <div class="d-flex align-items-center gap-2">
@@ -757,13 +912,13 @@
                 <span class="preview-dot green"></span>
             </div>
             <span class="fw-bold" style="font-size: 14px; color: var(--text-main);">
-                <i class="bi bi-window-stack me-1 text-info"></i> Giao Diện Web Preview
+                <i class="bi bi-window-stack me-1 text-info"></i> Web Preview Mode
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary" id="previewReloadBtn" title="Tải lại trang"><i class="bi bi-arrow-clockwise"></i></button>
-            <button class="btn btn-sm btn-outline-primary" id="previewNewTabBtn" title="Mở trong tab mới"><i class="bi bi-box-arrow-up-right"></i> Tab mới</button>
-            <button class="btn btn-sm btn-danger px-3 fw-bold ms-2" id="previewCloseBtn"><i class="bi bi-x-lg me-1"></i> Đóng</button>
+            <button class="btn btn-sm btn-outline-secondary" id="previewReloadBtn" title="Reload Page"><i class="bi bi-arrow-clockwise"></i></button>
+            <button class="btn btn-sm btn-outline-primary" id="previewNewTabBtn" title="Open in new tab"><i class="bi bi-box-arrow-up-right"></i> New Tab</button>
+            <button class="btn btn-sm btn-danger px-3 fw-bold ms-2" id="previewCloseBtn"><i class="bi bi-x-lg me-1"></i> Close</button>
         </div>
     </div>
     <div class="web-preview-body">
@@ -806,26 +961,38 @@
 
         <div class="chat-box" id="chatBox"></div>
 
+        <!-- Floating Scroll to Bottom Button -->
+        <button id="scrollToBottomBtn" class="scroll-bottom-btn" title="Scroll to bottom">
+            <i class="bi bi-arrow-down-short"></i>
+        </button>
+
+        <!-- Floating Input Area -->
         <div class="input-floating-wrapper" id="inputWrapper">
             <div class="input-area">
-                <input type="text" id="userInput" class="form-control custom-input" placeholder="Loading configuration, please wait..." disabled autocomplete="off">
-                <button class="btn-send-icon" id="sendBtn" title="Send"><i class="bi bi-arrow-return-left"></i></button>
+                <div class="attached-files-container" id="attachedFilesContainer" style="display: none;"></div>
+                <div class="input-row">
+                    <button type="button" class="btn-attach-icon" id="attachBtn" title="Attach document/code file">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <input type="text" id="userInput" class="form-control custom-input" placeholder="Loading configuration, please wait..." disabled autocomplete="off">
+                    <button class="btn-send-icon" id="sendBtn" title="Send"><i class="bi bi-arrow-return-left"></i></button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Xem Code (Read-only Code Viewer) -->
+<!-- Modal Code Viewer -->
 <div class="modal fade" id="codeViewerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h6 class="modal-title fw-bold text-info m-0">
-                    <i class="bi bi-code-square me-2"></i> Chi tiết Code (<span id="modalCodeLang">CODE</span>)
+                    <i class="bi bi-code-square me-2"></i> Code Viewer (<span id="modalCodeLang">CODE</span>)
                 </h6>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-outline-info fw-bold" id="modalCopyCodeBtn"><i class="bi bi-clipboard me-1"></i> Sao chép code</button>
-                    <button type="button" class="btn btn-sm btn-secondary fw-bold" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i> Đóng</button>
+                    <button class="btn btn-sm btn-outline-info fw-bold" id="modalCopyCodeBtn"><i class="bi bi-clipboard me-1"></i> Copy Code</button>
+                    <button type="button" class="btn btn-sm btn-secondary fw-bold" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i> Close</button>
                 </div>
             </div>
             <div class="modal-body p-0">
@@ -835,41 +1002,49 @@
     </div>
 </div>
 
-<!-- Modal Cài Đặt Người Dùng -->
+<!-- Modal User Settings (English) -->
 <div class="modal fade" id="userSettingsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title fw-bold"><i class="bi bi-sliders me-2"></i> CÀI ĐẶT NGƯỜI DÙNG</h6>
+                <h6 class="modal-title fw-bold"><i class="bi bi-sliders me-2"></i> User Settings</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Giao diện (Sáng / Tối):</label>
+                    <label class="form-label fw-semibold">Appearance Theme:</label>
                     <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="themeOptions" id="themeDark" value="dark" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="themeDark"><i class="bi bi-moon-stars-fill me-1"></i> Tối (Dark)</label>
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeDark" value="dark" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="themeDark"><i class="bi bi-moon-stars-fill me-1"></i> Dark</label>
 
                         <input type="radio" class="btn-check" name="themeOptions" id="themeLight" value="light" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="themeLight"><i class="bi bi-sun-fill me-1"></i> Sáng (Light)</label>
+                        <label class="btn btn-outline-primary" for="themeLight"><i class="bi bi-sun-fill me-1"></i> Light</label>
+
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeSystem" value="system" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="themeSystem"><i class="bi bi-laptop me-1"></i> System</label>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Bổ sung System Prompt cá nhân:</label>
-                    <textarea id="customUserPromptInput" class="form-control" rows="4" placeholder="Nhập yêu cầu bổ sung cho AI (Ví dụ: Trả lời ngắn gọn, xưng hô bạn - tôi...)"></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label fw-semibold mb-0">Custom System Prompt:</label>
+                        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" id="resetUserPromptBtn" style="font-size: 12px; color: var(--text-sub);">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset to Default
+                        </button>
+                    </div>
+                    <textarea id="customUserPromptInput" class="form-control" rows="4" placeholder="Enter additional custom instructions for AI (e.g. Respond concisely, address me as friend...)"></textarea>
                     <div class="form-text small mt-2" style="color: var(--text-sub);">
-                        * System chính của hệ thống và các quy tắc AlViewer vẫn sẽ được duy trì tự động.
+                        * Main system core rules and AlViewer link formatting remain active automatically.
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary w-100" id="saveUserSettingsBtn">Lưu Cài Đặt</button>
+                <button type="button" class="btn btn-primary w-100 fw-bold" id="saveUserSettingsBtn">Save Settings</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Admin (/admin-0904) -->
+<!-- Modal Admin Config -->
 <div class="modal fade" id="adminConfigModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -898,8 +1073,6 @@
                 </ul>
 
                 <div class="tab-content" id="adminTabsContent">
-                    
-                    <!-- TAB 1: Groq Keys & Models -->
                     <div class="tab-pane fade show active" id="tab-keys" role="tabpanel">
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-info">Groq API Key 1 (Chính):</label>
@@ -911,11 +1084,11 @@
                             <label class="form-label fw-semibold text-info">Groq API Key 3 (Dự phòng 2):</label>
                             <input type="password" id="adminApiKey3Input" class="form-control mb-3" placeholder="gsk_...">
                             <div class="form-text small" style="color: var(--text-sub);">
-                                * Hệ thống sẽ tự động chuyển đổi key mượt mà khi gặp giới hạn hạn mức (Rate limit 429).
+                                * Hệ thống sẽ tự động chuyển đổi key mượt mà khi gặp giới hạn hạn mức.
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">AI Model (Đầy đủ danh sách chuẩn Groq):</label>
+                            <label class="form-label fw-semibold">AI Model:</label>
                             <select id="adminModelSelect" class="form-select">
                                 <optgroup label="Meta Llama">
                                     <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
@@ -940,7 +1113,6 @@
                         </div>
                     </div>
 
-                    <!-- TAB 2: System Prompt -->
                     <div class="tab-pane fade" id="tab-prompt" role="tabpanel">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">System Prompt (Chính):</label>
@@ -948,7 +1120,6 @@
                         </div>
                     </div>
 
-                    <!-- TAB 3: AlViewer -->
                     <div class="tab-pane fade" id="tab-viewer" role="tabpanel">
                         <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
                             <div class="mb-2">
@@ -1006,34 +1177,58 @@ let alviewerDataMap = {};
 let sessionNames = JSON.parse(localStorage.getItem("alchat_session_names") || "{}");
 let isGenerating = false;
 
-// Trạng thái phục vụ chỉnh sửa tin nhắn & xem preview
+// File Attachments
+let attachedFiles = [];
+
+// State variables
 let editingMessageIndex = null; 
 let currentCodeForModal = "";
 let currentPreviewCode = "";
 
 let currentTheme = localStorage.getItem("alchat_theme") || "dark";
-document.documentElement.setAttribute("data-theme", currentTheme);
+
+function applyTheme(theme) {
+    let effectiveTheme = theme;
+    if (theme === "system") {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", effectiveTheme);
+}
+
+applyTheme(currentTheme);
+
+// Listen to OS system color scheme changes dynamically
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (currentTheme === "system") {
+        applyTheme("system");
+    }
+});
+
+// Prevent touch zoom gestures on mobile browsers
+document.addEventListener('gesturestart', function (e) {
+    e.preventDefault();
+});
 
 function getActiveApiKey() {
     if (!groqApiKeys || groqApiKeys.length === 0) return "";
     return groqApiKeys[currentKeyIndex % groqApiKeys.length];
 }
 
-/* Quy tắc System Prompt bao gồm quy định AI dùng backticks khi viết code */
+/* System Prompt with strict rule for link buttons outside code */
 function getFullSystemPrompt() {
     const refKeys = Object.keys(alviewerDataMap).join(", ");
     const viewerSystemRule = `
-[MANDATORY ALVIEWER LINK RULES]:
+[MANDATORY LINK AND ALVIEWER DISPLAY RULES]:
 1. Existing AlViewer reference keys: [${refKeys || 'none'}].
-2. When the user asks or requests information related to the above references, you MUST provide the full link format:
-https://hothiptv.github.io/AlChat/alviewer?ReferenceKey
-3. Do not invent non-existent references.
+2. Whenever you want to present an interactive link/button to the user in regular conversation, wrap the URL inside '!!' delimiters, e.g.:
+   !!https://hothiptv.github.io/AlChat/alviewer?ReferenceKey!! or !!https://example.com!!
+3. CRITICAL: Use '!!URL!!' formatting strictly OUTSIDE code blocks. DO NOT use '!!' inside code blocks or code snippets!
 
 [MANDATORY CODE FORMATTING INSTRUCTIONS]:
 When generating ANY source code, scripts, programs, HTML, CSS, JavaScript, or snippets:
-1. ALWAYS format and wrap code using triple backticks (\`\`\`) specifying the programming language (e.g., \`\`\`html, \`\`\`javascript, \`\`\`css, \`\`\`python, \`\`\`cpp, etc.).
+1. ALWAYS format and wrap code using triple backticks (\`\`\`) specifying the language (e.g., \`\`\`html, \`\`\`javascript, \`\`\`python, etc.).
 2. For complete web pages or HTML apps, provide full executable code starting with <!DOCTYPE html> wrapped inside \`\`\`html ... \`\`\`.
-3. This backtick structure allows AlChat to display dedicated interactive code frames, view code popups, copy buttons, and live HTML web preview screens for the user.
+3. Keep code pure without inserting '!!' wrapper syntax inside programming source code.
 `;
     let result = adminSystemPrompt;
     if (customUserPrompt.trim()) {
@@ -1052,6 +1247,7 @@ try {
     sessions = {};
 }
 
+// Disable right click except inside inputs/code
 document.addEventListener("contextmenu", e => e.preventDefault());
 document.addEventListener("keydown", (e) => {
     if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || (e.ctrlKey && e.keyCode === 85)) {
@@ -1064,6 +1260,8 @@ const overlay = document.getElementById('overlay');
 const sidebar = document.getElementById('sidebar');
 const menuToggleBtn = document.getElementById('menuToggleBtn');
 const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+const chatBox = document.getElementById('chatBox');
+const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const newChatBtn = document.getElementById('newChatBtn');
@@ -1071,12 +1269,18 @@ const clearChatBtn = document.getElementById('clearChatBtn');
 const msgContextMenu = document.getElementById('msgContextMenu');
 const inputWrapper = document.getElementById('inputWrapper');
 
+const attachBtn = document.getElementById('attachBtn');
+const documentFileInput = document.getElementById('documentFileInput');
+const attachedFilesContainer = document.getElementById('attachedFilesContainer');
+
 const userSettingsModal = new bootstrap.Modal(document.getElementById('userSettingsModal'));
 const userSettingsBtn = document.getElementById('userSettingsBtn');
 const customUserPromptInput = document.getElementById('customUserPromptInput');
+const resetUserPromptBtn = document.getElementById('resetUserPromptBtn');
 const saveUserSettingsBtn = document.getElementById('saveUserSettingsBtn');
 const themeDarkRadio = document.getElementById('themeDark');
 const themeLightRadio = document.getElementById('themeLight');
+const themeSystemRadio = document.getElementById('themeSystem');
 
 const adminModal = new bootstrap.Modal(document.getElementById('adminConfigModal'));
 const adminApiKey1Input = document.getElementById('adminApiKey1Input');
@@ -1089,7 +1293,6 @@ const adminSaveAlert = document.getElementById('adminSaveAlert');
 const viewerManagerList = document.getElementById('viewerManagerList');
 const addViewerDataBtn = document.getElementById('addViewerDataBtn');
 
-// Modal xem code & Màn hình preview
 const codeViewerModal = new bootstrap.Modal(document.getElementById('codeViewerModal'));
 const modalCodeLang = document.getElementById('modalCodeLang');
 const modalCodeContainer = document.getElementById('modalCodeContainer');
@@ -1101,9 +1304,10 @@ const previewReloadBtn = document.getElementById('previewReloadBtn');
 const previewNewTabBtn = document.getElementById('previewNewTabBtn');
 const previewCloseBtn = document.getElementById('previewCloseBtn');
 
-/* VisualViewport Mobile Keyboard Fix */
+/* VisualViewport Mobile Keyboard Offset */
 if (window.visualViewport) {
     const onResize = () => {
+        if (inputWrapper.classList.contains("slide-down")) return;
         const keyboardHeight = window.innerHeight - window.visualViewport.height;
         if (keyboardHeight > 100) {
             const bottomOffset = keyboardHeight - (window.innerHeight - window.visualViewport.offsetTop - window.visualViewport.height);
@@ -1116,8 +1320,79 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener("scroll", onResize);
 }
 
+/* Scroll-to-bottom Floating Button Logic */
+chatBox.addEventListener('scroll', () => {
+    const scrollDifference = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight;
+    if (scrollDifference > 120) {
+        scrollToBottomBtn.classList.add('show');
+    } else {
+        scrollToBottomBtn.classList.remove('show');
+    }
+});
+
+scrollToBottomBtn.addEventListener('click', () => {
+    chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+    });
+});
+
+attachBtn.addEventListener("click", () => {
+    documentFileInput.value = "";
+    documentFileInput.click();
+});
+
+documentFileInput.addEventListener("change", (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        if (file.type.startsWith("image/") || /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(file.name)) {
+            alert(`File "${file.name}" is an image. Please attach document or code files (.txt, .pdf, .doc, .js, .html, .csv, etc.).`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            attachedFiles.push({
+                name: file.name,
+                size: file.size,
+                content: event.target.result
+            });
+            renderAttachedFiles();
+            updateSendButtonState();
+        };
+        reader.readAsText(file);
+    });
+});
+
+function renderAttachedFiles() {
+    if (attachedFiles.length === 0) {
+        attachedFilesContainer.style.display = "none";
+        attachedFilesContainer.innerHTML = "";
+        return;
+    }
+    attachedFilesContainer.style.display = "flex";
+    attachedFilesContainer.innerHTML = "";
+
+    attachedFiles.forEach((fileObj, idx) => {
+        const chip = document.createElement("div");
+        chip.className = "file-chip";
+        chip.innerHTML = `
+            <i class="bi bi-file-earmark-code"></i>
+            <span>${escapeHtml(fileObj.name)}</span>
+            <span class="remove-file-btn" onclick="window.removeAttachedFile(${idx})">&times;</span>
+        `;
+        attachedFilesContainer.appendChild(chip);
+    });
+}
+
+window.removeAttachedFile = function(idx) {
+    attachedFiles.splice(idx, 1);
+    renderAttachedFiles();
+    updateSendButtonState();
+};
+
 function updateSendButtonState() {
-    if (userInput.value.trim().length > 0) {
+    if (userInput.value.trim().length > 0 || attachedFiles.length > 0) {
         sendBtn.classList.add("show-btn");
     } else {
         sendBtn.classList.remove("show-btn");
@@ -1127,7 +1402,7 @@ function updateSendButtonState() {
 userInput.addEventListener("input", updateSendButtonState);
 userInput.addEventListener("focus", updateSendButtonState);
 userInput.addEventListener("blur", () => {
-    if (!userInput.value.trim()) {
+    if (!userInput.value.trim() && attachedFiles.length === 0) {
         sendBtn.classList.remove("show-btn");
     }
 });
@@ -1151,40 +1426,37 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-/* Parse đầy đủ Markdown chuẩn bao gồm: Tables, Blockquotes (>), Headings (# -> ######), Bold/Italic, Lists, HR, Links, Inline Code */
 function parseFullMarkdown(str) {
     if (!str) return "";
+    let htmlContent = "";
     if (typeof marked !== 'undefined' && marked.parse) {
         try {
-            return marked.parse(str, { gfm: true, breaks: true });
+            htmlContent = marked.parse(str, { gfm: true, breaks: true });
         } catch (e) {
-            console.error("Marked parsing error:", e);
+            htmlContent = escapeHtml(str).replace(/\n/g, '<br>');
         }
+    } else {
+        htmlContent = escapeHtml(str).replace(/\n/g, '<br>');
     }
-    
-    // Fallback parser nếu marked chưa load xong
-    let text = escapeHtml(str);
-    text = text.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
-    text = text.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
-    text = text.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
-    text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-    text = text.replace(/^&gt; (.*$)/gim, '<blockquote>$1</blockquote>');
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    text = text.replace(/_(.*?)_/g, '<em>$1</em>');
-    text = text.replace(/~~(.*?)~~/g, '<del>$1</del>');
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-    return text.replace(/\n/g, '<br>');
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlContent;
+    const tables = tempDiv.querySelectorAll("table");
+    tables.forEach(table => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-responsive-container";
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+    });
+
+    return tempDiv.innerHTML;
 }
 
 function copyToClipboard(text, btnElement) {
     const doFeedback = () => {
         if (btnElement) {
             const orig = btnElement.innerHTML;
-            btnElement.innerHTML = `<i class="bi bi-check2 me-1"></i> Đã chép!`;
+            btnElement.innerHTML = `<i class="bi bi-check2 me-1"></i> Copied!`;
             btnElement.classList.add("btn-success");
             setTimeout(() => {
                 btnElement.innerHTML = orig;
@@ -1215,7 +1487,6 @@ function fallbackCopy(text, callback) {
     document.body.removeChild(textArea);
 }
 
-/* Hiển thị Code Modal read-only */
 function openCodeModal(lang, code) {
     currentCodeForModal = code;
     modalCodeLang.innerText = (lang || "CODE").toUpperCase();
@@ -1227,7 +1498,6 @@ modalCopyCodeBtn.addEventListener("click", () => {
     copyToClipboard(currentCodeForModal, modalCopyCodeBtn);
 });
 
-/* Hiển thị Web Preview ở màn hình UI riêng */
 function openWebPreview(htmlCode) {
     currentPreviewCode = htmlCode;
     webPreviewIframe.srcdoc = htmlCode;
@@ -1250,7 +1520,6 @@ previewCloseBtn.addEventListener("click", () => {
     webPreviewIframe.srcdoc = "";
 });
 
-/* Tạo thẻ Khung Code với Nút Xem Code, Sao Chép và Chạy Web */
 function createCodeBlockCard(lang, codeContent) {
     const card = document.createElement("div");
     card.className = "code-block-card";
@@ -1267,9 +1536,9 @@ function createCodeBlockCard(lang, codeContent) {
         <div class="code-card-header">
             <span class="code-lang-badge"><i class="bi bi-code-slash me-1"></i>${langDisplay}</span>
             <div class="code-card-actions">
-                ${isHtml ? `<button class="btn btn-sm btn-success run-html-btn me-1"><i class="bi bi-play-fill me-1"></i>Chạy Trang Web</button>` : ''}
-                <button class="btn btn-sm btn-outline-light view-code-btn me-1"><i class="bi bi-eye-fill me-1"></i>Xem Code</button>
-                <button class="btn btn-sm btn-outline-light copy-code-btn"><i class="bi bi-clipboard me-1"></i>Sao chép</button>
+                ${isHtml ? `<button class="btn btn-sm btn-success run-html-btn me-1"><i class="bi bi-play-fill me-1"></i>Run App</button>` : ''}
+                <button class="btn btn-sm btn-outline-light view-code-btn me-1"><i class="bi bi-eye-fill me-1"></i>View Code</button>
+                <button class="btn btn-sm btn-outline-light copy-code-btn"><i class="bi bi-clipboard me-1"></i>Copy</button>
             </div>
         </div>
         <pre class="code-card-preview"><code>${escapeHtml(snippetLines)}</code></pre>
@@ -1303,35 +1572,41 @@ function createCodeBlockCard(lang, codeContent) {
     return card;
 }
 
-/* Parse nội dung tin nhắn hỗ trợ Markdown backticks & Full Markdown (Tables, Blockquotes, Headings, List) */
-function renderFormattedMessageContent(container, rawText, isAssistant) {
+/* Enhanced Formatted Rendering: Parse Link Badges strictly outside Code Blocks */
+function renderFormattedMessageContent(container, rawText, isAssistant, msgObj) {
     container.innerHTML = "";
-    if (!rawText) return;
-    
-    if (!rawText.includes("```")) {
-        const textSpan = document.createElement("div");
-        textSpan.className = "msg-text-block";
-        textSpan.innerHTML = parseFullMarkdown(rawText);
-        container.appendChild(textSpan);
-        return;
+    if (!rawText && (!msgObj || !msgObj.files || msgObj.files.length === 0)) return;
+
+    // Render attached file pills if present on user message
+    if (msgObj && msgObj.files && msgObj.files.length > 0) {
+        const pillsDiv = document.createElement("div");
+        pillsDiv.className = "msg-attached-pills";
+        msgObj.files.forEach(f => {
+            const pill = document.createElement("span");
+            pill.className = "msg-attached-pill";
+            pill.innerHTML = `<i class="bi bi-file-earmark-code"></i> ${escapeHtml(f.name)}`;
+            pillsDiv.appendChild(pill);
+        });
+        container.appendChild(pillsDiv);
     }
 
+    const textToProcess = rawText || "";
+    
+    // Split text by code blocks first so links inside code are untouched
     const codeBlockRegex = /```([a-zA-Z0-9_+-]*)\r?\n?([\s\S]*?)(?:```|$)/g;
     let lastIndex = 0;
     let match;
 
-    while ((match = codeBlockRegex.exec(rawText)) !== null) {
-        const textBefore = rawText.slice(lastIndex, match.index);
-        if (textBefore.trim()) {
-            const textDiv = document.createElement("div");
-            textDiv.className = "msg-text-block";
-            textDiv.innerHTML = parseFullMarkdown(textBefore);
-            container.appendChild(textDiv);
+    while ((match = codeBlockRegex.exec(textToProcess)) !== null) {
+        // Prose text before code block
+        const proseBefore = textToProcess.slice(lastIndex, match.index);
+        if (proseBefore.trim()) {
+            renderProseBlock(container, proseBefore, isAssistant);
         }
 
+        // Code block
         const lang = match[1];
         const codeContent = match[2];
-
         if (match[0].startsWith("```")) {
             const codeCard = createCodeBlockCard(lang, codeContent);
             container.appendChild(codeCard);
@@ -1343,16 +1618,62 @@ function renderFormattedMessageContent(container, rawText, isAssistant) {
         }
     }
 
-    const textAfter = rawText.slice(lastIndex);
-    if (textAfter.trim()) {
-        const textDiv = document.createElement("div");
-        textDiv.className = "msg-text-block";
-        textDiv.innerHTML = parseFullMarkdown(textAfter);
-        container.appendChild(textDiv);
+    // Remaining prose after last code block
+    const proseAfter = textToProcess.slice(lastIndex);
+    if (proseAfter.trim()) {
+        renderProseBlock(container, proseAfter, isAssistant);
     }
 }
 
-/* Context Menu handling */
+/* Render Prose text and extract !!URL!! into interactive link badges */
+function renderProseBlock(container, textBlock, isAssistant) {
+    const linksFound = [];
+    // Extract !!URL!! tags ONLY from prose
+    const cleanText = textBlock.replace(/!!(.*?)!!/g, (match, p1) => {
+        let cleanUrl = p1.trim();
+        if (cleanUrl) linksFound.push(cleanUrl);
+        return "";
+    });
+
+    if (cleanText.trim()) {
+        const textSpan = document.createElement("div");
+        textSpan.className = "msg-text-block";
+        textSpan.innerHTML = parseFullMarkdown(cleanText);
+        container.appendChild(textSpan);
+    }
+
+    // Render interactive link badges if links were present
+    if (linksFound.length > 0 && isAssistant) {
+        const badgeContainer = document.createElement("div");
+        badgeContainer.className = "link-badge-container";
+
+        linksFound.forEach(url => {
+            let displayLabel = url;
+            let targetHref = url;
+
+            if (url.includes("alviewer?")) {
+                const refKey = url.split("alviewer?")[1];
+                displayLabel = `Open AlViewer: ?${refKey}`;
+            }
+
+            const linkBtn = document.createElement("a");
+            linkBtn.className = "link-badge";
+            linkBtn.href = targetHref;
+            linkBtn.target = "_blank";
+            linkBtn.rel = "noopener noreferrer";
+            linkBtn.innerHTML = `<i class="bi bi-box-arrow-up-right me-1"></i> ${escapeHtml(displayLabel)}`;
+
+            linkBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+
+            badgeContainer.appendChild(linkBtn);
+        });
+
+        container.appendChild(badgeContainer);
+    }
+}
+
 let selectedMsgIndex = -1;
 let selectedMsgRole = "";
 
@@ -1407,6 +1728,10 @@ window.handleEditMsg = function(index) {
     const msg = sessions[activeSessionId][index];
     if (msg) {
         userInput.value = msg.content;
+        if (msg.files) {
+            attachedFiles = [...msg.files];
+            renderAttachedFiles();
+        }
         editingMessageIndex = index; 
         updateSendButtonState();
         userInput.focus();
@@ -1562,7 +1887,6 @@ function showSessionOptions(sId, currentTitle) {
 }
 
 function renderChat(isNewMessageAdded = false) {
-    const chatBox = document.getElementById("chatBox");
     if (!chatBox) return;
     
     chatBox.innerHTML = "";
@@ -1594,51 +1918,15 @@ function renderChat(isNewMessageAdded = false) {
         }, {passive: true});
         div.addEventListener("touchend", () => clearTimeout(touchTimer));
         div.addEventListener("click", (e) => {
-            if (e.target.closest('.code-block-card') || e.target.closest('button')) return;
+            if (e.target.closest('.code-block-card') || e.target.closest('button') || e.target.closest('a') || e.target.closest('.link-badge')) return;
             showContextMenu(e, idx, msg.role);
         });
-        div.addEventListener("contextmenu", (e) => showContextMenu(e, idx, msg.role));
+        div.addEventListener("contextmenu", (e) => {
+            if (e.target.closest('a') || e.target.closest('.link-badge')) return;
+            showContextMenu(e, idx, msg.role);
+        });
 
-        let textContent = msg.content;
-        const linksFound = [];
-
-        if (msg.role === "assistant") {
-            const urlRegex = /(https?:\/\/[^\s\)]+|alviewer\?[^\s\)]+)/g;
-            let match;
-            while ((match = urlRegex.exec(textContent)) !== null) {
-                let cleanUrl = match[1].replace(/[\]\)\,\.\;]+$/, '');
-                linksFound.push(cleanUrl);
-            }
-            textContent = textContent.replace(urlRegex, "").trim();
-        }
-
-        renderFormattedMessageContent(div, textContent, msg.role === "assistant");
-
-        if (linksFound.length > 0 && msg.role === "assistant") {
-            const badgeContainer = document.createElement("div");
-            badgeContainer.className = "link-badge-container";
-
-            linksFound.forEach(url => {
-                let displayLabel = url;
-                let targetHref = url;
-
-                if (url.includes("alviewer?")) {
-                    const refKey = url.split("alviewer?")[1];
-                    displayLabel = `View: ?${refKey}`;
-                }
-
-                const linkBtn = document.createElement("a");
-                linkBtn.className = "link-badge";
-                linkBtn.href = targetHref;
-                linkBtn.target = "_self";
-                linkBtn.innerHTML = `<i class="bi bi-box-arrow-up-right"></i> ${displayLabel}`;
-
-                badgeContainer.appendChild(linkBtn);
-            });
-
-            div.appendChild(badgeContainer);
-        }
-
+        renderFormattedMessageContent(div, msg.content, msg.role === "assistant", msg);
         chatBox.appendChild(div);
     });
 
@@ -1648,13 +1936,12 @@ function renderChat(isNewMessageAdded = false) {
 }
 
 function showThinkingBubble() {
-    const chatBox = document.getElementById("chatBox");
     const thinkingDiv = document.createElement("div");
     thinkingDiv.id = "thinkingBubble";
     thinkingDiv.className = "thinking-bubble msg-animate";
     thinkingDiv.innerHTML = `
-        <i class="bi bi-cpu-fill text-info"></i>
-        <span>Thinking</span>
+        <div class="spinner-ring"></div>
+        <span class="fw-semibold">AI is thinking...</span>
         <div class="thinking-dots"><span></span><span></span><span></span></div>
     `;
     chatBox.appendChild(thinkingDiv);
@@ -1666,6 +1953,33 @@ function showThinkingBubble() {
 function removeThinkingBubble() {
     const bubble = document.getElementById("thinkingBubble");
     if (bubble) bubble.remove();
+}
+
+async function animateTextStreaming(fullText) {
+    const div = document.createElement("div");
+    div.className = "message ai-msg msg-animate";
+    chatBox.appendChild(div);
+
+    let currentLength = 0;
+    const totalLength = fullText.length;
+    const chunkSize = Math.max(2, Math.floor(totalLength / 60));
+
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            currentLength += chunkSize;
+            if (currentLength >= totalLength) {
+                currentLength = totalLength;
+                clearInterval(interval);
+                renderFormattedMessageContent(div, fullText, true);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                resolve();
+            } else {
+                const subStr = fullText.substring(0, currentLength);
+                renderFormattedMessageContent(div, subStr, true);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }, 20);
+    });
 }
 
 function switchSession(sId) {
@@ -1706,11 +2020,17 @@ userSettingsBtn.addEventListener("click", () => {
     customUserPromptInput.value = customUserPrompt;
     if (currentTheme === "light") {
         themeLightRadio.checked = true;
+    } else if (currentTheme === "system") {
+        themeSystemRadio.checked = true;
     } else {
         themeDarkRadio.checked = true;
     }
     userSettingsModal.show();
     if (sidebar.classList.contains('show')) toggleSidebar();
+});
+
+resetUserPromptBtn.addEventListener("click", () => {
+    customUserPromptInput.value = "";
 });
 
 saveUserSettingsBtn.addEventListener("click", () => {
@@ -1719,10 +2039,13 @@ saveUserSettingsBtn.addEventListener("click", () => {
     
     if (themeLightRadio.checked) {
         currentTheme = "light";
+    } else if (themeSystemRadio.checked) {
+        currentTheme = "system";
     } else {
         currentTheme = "dark";
     }
-    document.documentElement.setAttribute("data-theme", currentTheme);
+    
+    applyTheme(currentTheme);
     localStorage.setItem("alchat_theme", currentTheme);
 
     if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
@@ -1793,15 +2116,40 @@ addViewerDataBtn.addEventListener("click", () => {
     renderViewerManagerUI();
 });
 
+/* Convert stored messages into API payload format (injecting file context cleanly) */
+function prepareApiMessagesPayload() {
+    const messages = sessions[activeSessionId] || [];
+    return messages.map(msg => {
+        let contentStr = msg.content || "";
+        if (msg.role === "user" && msg.files && msg.files.length > 0) {
+            let filesPrompt = "\n\n[USER ATTACHED DOCUMENTS & FILES]:";
+            msg.files.forEach(f => {
+                filesPrompt += `\n--- FILE NAME: ${f.name} ---\n${f.content}\n--- END FILE ---`;
+            });
+            contentStr += filesPrompt;
+        }
+        return {
+            role: msg.role,
+            content: contentStr
+        };
+    });
+}
+
 async function triggerAICompletion() {
     isGenerating = true;
     userInput.disabled = true;
     sendBtn.disabled = true;
+    attachBtn.style.opacity = "0.5";
+    attachBtn.style.pointerEvents = "none";
+    
+    inputWrapper.classList.add("slide-down");
     showThinkingBubble();
 
     let attempts = 0;
     const maxAttempts = Math.max(1, groqApiKeys.length);
     let success = false;
+
+    const payloadMessages = prepareApiMessagesPayload();
 
     while (attempts < maxAttempts && !success) {
         const currentKey = getActiveApiKey();
@@ -1816,7 +2164,7 @@ async function triggerAICompletion() {
                 },
                 body: JSON.stringify({
                     model: modelName,
-                    messages: sessions[activeSessionId],
+                    messages: payloadMessages,
                     temperature: 0.7
                 })
             });
@@ -1835,7 +2183,8 @@ async function triggerAICompletion() {
                 const aiReply = data.choices[0].message.content;
                 sessions[activeSessionId].push({ role: "assistant", content: aiReply });
                 saveLocalSessions();
-                renderChat(true);
+                
+                await animateTextStreaming(aiReply);
                 success = true;
             } else {
                 break;
@@ -1848,7 +2197,8 @@ async function triggerAICompletion() {
 
     if (!success) {
         removeThinkingBubble();
-        sessions[activeSessionId].push({ role: "assistant", content: "The system is busy or responding slowly. Please try sending your message again in a few seconds!" });
+        const errMessage = "System busy or rate limited. Please try again shortly!";
+        sessions[activeSessionId].push({ role: "assistant", content: errMessage });
         saveLocalSessions();
         renderChat(true);
     }
@@ -1856,6 +2206,11 @@ async function triggerAICompletion() {
     isGenerating = false;
     userInput.disabled = false;
     sendBtn.disabled = false;
+    attachBtn.style.opacity = "1";
+    attachBtn.style.pointerEvents = "auto";
+    
+    inputWrapper.classList.remove("slide-down");
+    
     updateSendButtonState();
     userInput.focus();
 }
@@ -1863,9 +2218,9 @@ async function triggerAICompletion() {
 async function sendMessage() {
     if (isGenerating) return;
     const text = userInput.value.trim();
-    if (!text) return;
+    if (!text && attachedFiles.length === 0) return;
 
-    if (text === "/admin-0904") {
+    if (text === "admin 3677") {
         userInput.value = "";
         userInput.blur();
         updateSendButtonState();
@@ -1883,7 +2238,7 @@ async function sendMessage() {
     }
 
     if (groqApiKeys.length === 0) {
-        alert("API Key has not been configured yet!");
+        alert("API Key is not configured!");
         return;
     }
 
@@ -1898,11 +2253,23 @@ async function sendMessage() {
         editingMessageIndex = null; 
     }
 
-    sessions[activeSessionId].push({ role: "user", content: text });
+    // Store user message with file attachments nicely separated
+    const newUserMsg = {
+        role: "user",
+        content: text
+    };
+
+    if (attachedFiles.length > 0) {
+        newUserMsg.files = [...attachedFiles];
+    }
+
+    sessions[activeSessionId].push(newUserMsg);
     saveLocalSessions();
     renderChat(true);
 
     userInput.value = "";
+    attachedFiles = [];
+    renderAttachedFiles();
     userInput.blur();
     updateSendButtonState();
 
