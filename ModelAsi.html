@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ModelAsi Manager</title>
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    body {
+      background: #f4f6f9;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      color: white;
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      border: 0;
+      border-radius: 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.06);
+    }
+
+    .model-card {
+      transition: .2s;
+    }
+
+    .model-card:hover {
+      transform: translateY(-2px);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    #previewText {
+      min-height: 500px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+
+    .empty {
+      padding: 40px;
+      text-align: center;
+      color: #777;
+    }
+
+    .status {
+      font-size: 14px;
+    }
+
+    .model-badge {
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container py-4 app">
+
+  <!-- HEADER -->
+  <div class="hero">
+    <h1 class="fw-bold mb-2">🤖 ModelAsi</h1>
+    <p class="mb-0">
+      Trình quản lý dữ liệu mô phỏng AI
+    </p>
+  </div>
+
+  <!-- FIREBASE STATUS -->
+  <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+    <span>
+      <span id="statusDot">●</span>
+      <span id="firebaseStatus">Đang kết nối Firestore...</span>
+    </span>
+
+    <span id="modelCount" class="badge bg-primary">
+      0 model
+    </span>
+  </div>
+
+
+  <!-- MÔ TẢ MODELASI -->
+  <div class="card p-4 mb-4">
+
+    <h4 class="fw-bold">
+      📖 Mô tả ModelAsi
+    </h4>
+
+    <p class="text-muted">
+      Viết hướng dẫn để AI hiểu ModelAsi là gì và cách sử dụng dữ liệu model.
+    </p>
+
+    <textarea
+      id="systemDescription"
+      class="form-control mb-3"
+      placeholder="Ví dụ: ModelAsi là hệ thống dữ liệu dùng để mô phỏng hành vi, phong cách và đặc điểm của các AI khác..."
+    ></textarea>
+
+    <button
+      id="saveDescriptionBtn"
+      class="btn btn-primary"
+    >
+      💾 Lưu mô tả
+    </button>
+
+  </div>
+
+
+  <!-- QUẢN LÝ MODEL -->
+  <div class="card p-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+      <div>
+        <h4 class="fw-bold mb-1">
+          🧠 Quản lý Model
+        </h4>
+
+        <p class="text-muted mb-0">
+          Thêm, chỉnh sửa hoặc xóa model.
+        </p>
+      </div>
+
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#modelModal"
+        onclick="openAddModal()"
+      >
+        + Thêm model
+      </button>
+
+    </div>
+
+    <div id="modelsList"></div>
+
+  </div>
+
+
+  <!-- ACTION -->
+  <div class="card p-4 mb-4">
+
+    <h4 class="fw-bold mb-3">
+      📦 Dữ liệu ModelAsi
+    </h4>
+
+    <div class="d-flex flex-wrap gap-2">
+
+      <button
+        class="btn btn-success"
+        onclick="copyAllData()"
+      >
+        📋 Sao chép toàn bộ
+      </button>
+
+      <button
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#previewModal"
+        onclick="generatePreview()"
+      >
+        👁️ Xem trước
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- MODAL THÊM / SỬA MODEL -->
+<!-- ========================= -->
+
+<div
+  class="modal fade"
+  id="modelModal"
+  tabindex="-1"
+>
+
+  <div class="modal-dialog modal-lg">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5
+          class="modal-title"
+          id="modelModalTitle"
+        >
+          Thêm model
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <input
+          type="hidden"
+          id="editingId"
+        >
+
+        <div class="mb-3">
+
+          <label class="form-label fw-bold">
+            Tên model
+          </label>
+
+          <input
+            type="text"
+            id="modelName"
+            class="form-control"
+            placeholder="Ví dụ: GPT-5"
+          >
+
+        </div>
+
+
+        <div class="mb-3">
+
+          <label class="form-label fw-bold">
+            Tên app sử dụng model
+          </label>
+
+          <input
+            type="text"
+            id="appName"
+            class="form-control"
+            placeholder="Ví dụ: ChatGPT"
+          >
+
+          <div class="form-text">
+            Nếu model được sử dụng trong ChatGPT thì ghi ChatGPT.
+          </div>
+
+        </div>
+
+
+        <div class="mb-3">
+
+          <label class="form-label fw-bold">
+            Đặc điểm / mô tả
+          </label>
+
+          <textarea
+            id="modelDescription"
+            class="form-control"
+            placeholder="Mô tả cách model hoạt động, phong cách trả lời, khả năng, tốc độ, suy luận..."
+          ></textarea>
+
+          <div class="form-text">
+            Nội dung này sẽ được đưa vào dữ liệu ModelAsi để AI sử dụng khi mô phỏng model.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Hủy
+        </button>
+
+        <button
+          class="btn btn-primary"
+          onclick="saveModel()"
+        >
+          💾 Lưu model
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- MODAL XEM TRƯỚC -->
+<!-- ========================= -->
+
+<div
+  class="modal fade"
+  id="previewModal"
+  tabindex="-1"
+>
+
+  <div class="modal-dialog modal-xl">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5 class="modal-title">
+          👁️ Xem trước ModelAsi
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <textarea
+          id="previewText"
+          class="form-control"
+          readonly
+        ></textarea>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-success"
+          onclick="copyAllData()"
+        >
+          📋 Sao chép
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Đóng
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<!-- Firebase Firestore -->
+<script type="module">
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    collection,
+    onSnapshot,
+    getDoc,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+  // ==========================================
+  // FIREBASE CONFIG
+  // ==========================================
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
+
+    authDomain: "dataan-d19b7.firebaseapp.com",
+
+    projectId: "dataan-d19b7",
+
+    storageBucket:
+      "dataan-d19b7.firebasestorage.app",
+
+    messagingSenderId:
+      "634110626824",
+
+    appId:
+      "1:634110626824:web:903a5181db232369f495bd",
+
+    measurementId:
+      "G-1LK1W3FPG3"
+  };
+
+
+  // ==========================================
+  // INITIALIZE FIRESTORE
+  // ==========================================
+
+  const app = initializeApp(firebaseConfig);
+
+  const db = getFirestore(app);
+
+
+  // ==========================================
+  // FIRESTORE REFERENCES
+  // ==========================================
+
+  const settingsDocRef = doc(db, "modelasi", "settings");
+  const modelsCollectionRef = collection(db, "modelasi_models");
+
+
+  // ==========================================
+  // FIREBASE STATUS
+  // ==========================================
+
+  const statusText =
+    document.getElementById("firebaseStatus");
+
+  const statusDot =
+    document.getElementById("statusDot");
+
+
+  statusText.textContent =
+    "Đã kết nối Firestore";
+
+  statusDot.className =
+    "text-success";
+
+
+  // ==========================================
+  // LOAD DESCRIPTION
+  // ==========================================
+
+  onSnapshot(settingsDocRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data && data.description) {
+        document.getElementById("systemDescription").value = data.description;
+      }
+    }
+  });
+
+
+  // ==========================================
+  // SAVE DESCRIPTION
+  // ==========================================
+
+  document
+    .getElementById("saveDescriptionBtn")
+    .addEventListener("click", async () => {
+
+      const description =
+        document.getElementById(
+          "systemDescription"
+        ).value.trim();
+
+
+      try {
+
+        await setDoc(settingsDocRef, {
+          description: description
+        }, { merge: true });
+
+        showToast(
+          "Đã lưu mô tả ModelAsi!",
+          "success"
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        showToast(
+          "Không thể lưu mô tả.",
+          "danger"
+        );
+
+      }
+
+    });
+
+
+  // ==========================================
+  // LOAD MODELS
+  // ==========================================
+
+  onSnapshot(modelsCollectionRef, (snapshot) => {
+    const models = {};
+    snapshot.forEach((docItem) => {
+      models[docItem.id] = docItem.data();
+    });
+    renderModels(models);
+  });
+
+
+  // ==========================================
+  // RENDER MODELS
+  // ==========================================
+
+  function renderModels(models) {
+
+    const container =
+      document.getElementById("modelsList");
+
+    const count =
+      Object.keys(models).length;
+
+
+    document.getElementById(
+      "modelCount"
+    ).textContent =
+      `${count} model`;
+
+
+    if (count === 0) {
+
+      container.innerHTML = `
+        <div class="empty">
+          <div style="font-size:45px">🤖</div>
+          <h5>Chưa có model</h5>
+          <p>Hãy thêm model đầu tiên.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    Object.entries(models)
+      .forEach(([id, model]) => {
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          "card model-card border mb-3 p-3";
+
+        // Tạo id duy nhất cho từng nút collapse mô tả
+        const descId = `descCollapse_${id}`;
+
+        card.innerHTML = `
+
+          <div class="d-flex justify-content-between gap-3 align-items-start">
+
+            <div class="flex-grow-1">
+
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <h5 class="fw-bold mb-0">
+                  ${escapeHTML(model.name || "Không tên")}
+                </h5>
+
+                <span class="badge bg-primary model-badge">
+                  ${escapeHTML(model.app || "Không rõ app")}
+                </span>
+
+              </div>
+
+              <!-- Nút bấm để xem mô tả đặc điểm -->
+              <button 
+                class="btn btn-sm btn-outline-secondary mb-2" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#${descId}" 
+                aria-expanded="false" 
+                aria-controls="${descId}"
+              >
+                📖 Xem đặc điểm
+              </button>
+
+              <!-- Nội dung mô tả được ẩn/hiện bằng Collapse -->
+              <div class="collapse" id="${descId}">
+                <div class="card card-body bg-light text-muted mt-1 p-2" style="white-space:pre-wrap">
+                  ${escapeHTML(model.description || "Chưa có mô tả.")}
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="d-flex gap-2 align-items-start">
+
+              <button
+                class="btn btn-sm btn-outline-primary"
+                onclick="editModel('${id}')"
+              >
+                ✏️
+              </button>
+
+              <button
+                class="btn btn-sm btn-outline-danger"
+                onclick="deleteModel('${id}')"
+              >
+                🗑️
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+
+        container.appendChild(card);
+
+      });
+
+  }
+
+
+  // ==========================================
+  // ADD MODEL
+  // ==========================================
+
+  window.openAddModal = function() {
+
+    document.getElementById(
+      "modelModalTitle"
+    ).textContent = "Thêm model";
+
+
+    document.getElementById(
+      "editingId"
+    ).value = "";
+
+
+    document.getElementById(
+      "modelName"
+    ).value = "";
+
+
+    document.getElementById(
+      "appName"
+    ).value = "";
+
+
+    document.getElementById(
+      "modelDescription"
+    ).value = "";
+
+  };
+
+
+  // ==========================================
+  // EDIT MODEL
+  // ==========================================
+
+  window.editModel = async function(id) {
+
+    try {
+      const docRef = doc(db, "modelasi_models", id);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        showToast("Không tìm thấy model.", "danger");
+        return;
+      }
+
+      const model = docSnap.data();
+
+      document.getElementById("modelModalTitle").textContent = "Chỉnh sửa model";
+      document.getElementById("editingId").value = id;
+      document.getElementById("modelName").value = model.name || "";
+      document.getElementById("appName").value = model.app || "";
+      document.getElementById("modelDescription").value = model.description || "";
+
+      const modal = new bootstrap.Modal(document.getElementById("modelModal"));
+      modal.show();
+
+    } catch (error) {
+      console.error(error);
+      showToast("Không thể tải thông tin model.", "danger");
+    }
+
+  };
+
+
+  // ==========================================
+  // SAVE MODEL
+  // ==========================================
+
+  window.saveModel = async function() {
+
+    const id =
+      document.getElementById(
+        "editingId"
+      ).value;
+
+
+    const name =
+      document.getElementById(
+        "modelName"
+      ).value.trim();
+
+
+    const appName =
+      document.getElementById(
+        "appName"
+      ).value.trim();
+
+
+    const description =
+      document.getElementById(
+        "modelDescription"
+      ).value.trim();
+
+
+    if (!name) {
+
+      showToast(
+        "Vui lòng nhập tên model.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    if (!appName) {
+
+      showToast(
+        "Vui lòng nhập tên app.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    if (!description) {
+
+      showToast(
+        "Vui lòng nhập đặc điểm model.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    const modelData = {
+
+      name: name,
+
+      app: appName,
+
+      description: description,
+
+      updatedAt:
+        Date.now()
+
+    };
+
+
+    try {
+
+      if (id) {
+
+        await updateDoc(
+          doc(db, "modelasi_models", id),
+          modelData
+        );
+
+        showToast(
+          "Đã cập nhật model!",
+          "success"
+        );
+
+      } else {
+
+        await addDoc(
+          modelsCollectionRef,
+          {
+            ...modelData,
+            createdAt:
+              Date.now()
+          }
+        );
+
+        showToast(
+          "Đã thêm model!",
+          "success"
+        );
+
+      }
+
+
+      const modalElement =
+        document.getElementById(
+          "modelModal"
+        );
+
+
+      const modal =
+        bootstrap.Modal.getInstance(
+          modalElement
+        );
+
+
+      if (modal) {
+        modal.hide();
+      }
+
+
+      openAddModal();
+
+    } catch (error) {
+
+      console.error(error);
+
+      showToast(
+        "Không thể lưu model.",
+        "danger"
+      );
+
+    }
+
+  };
+
+
+  // ==========================================
+  // DELETE MODEL
+  // ==========================================
+
+  window.deleteModel = async function(id) {
+
+    const ok =
+      confirm(
+        "Bạn có chắc muốn xóa model này không?"
+      );
+
+
+    if (!ok) return;
+
+
+    try {
+
+      await deleteDoc(
+        doc(db, "modelasi_models", id)
+      );
+
+
+      showToast(
+        "Đã xóa model.",
+        "success"
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      showToast(
+        "Không thể xóa model.",
+        "danger"
+      );
+
+    }
+
+  };
+
+
+  // ==========================================
+  // GET ALL DATA
+  // ==========================================
+
+  async function getAllData() {
+    try {
+      const settingsSnap = await getDoc(settingsDocRef);
+      const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+
+      const modelsSnap = await getDocs(modelsCollectionRef);
+      const models = {};
+      modelsSnap.forEach((docItem) => {
+        models[docItem.id] = docItem.data();
+      });
+
+      return {
+        settings: settings,
+        models: models
+      };
+    } catch (error) {
+      console.error(error);
+      return { settings: {}, models: {} };
+    }
+  }
+
+
+  // ==========================================
+  // GENERATE MODELASI TEXT
+  // ==========================================
+
+  window.generatePreview = async function() {
+
+    const data =
+      await getAllData();
+
+
+    const description =
+      data.settings?.description || "";
+
+
+    const models =
+      data.models || {};
+
+
+    let output = "";
+
+
+    output +=
+      "==============================\n";
+
+    output +=
+      "MODELAsi\n";
+
+    output +=
+      "==============================\n\n";
+
+
+    output +=
+      "MÔ TẢ MODELAsi:\n";
+
+    output +=
+      description || "(Chưa có mô tả)";
+
+    output += "\n\n";
+
+
+    output +=
+      "DANH SÁCH MODEL:\n";
+
+    output +=
+      "==============================\n\n";
+
+
+    const entries =
+      Object.values(models);
+
+
+    if (entries.length === 0) {
+
+      output +=
+        "Chưa có model.\n";
+
+    } else {
+
+      entries.forEach(
+        (model, index) => {
+
+          output +=
+            `MODEL ${index + 1}\n`;
+
+          output +=
+            `Tên model: ${model.name || ""}\n`;
+
+          output +=
+            `App sử dụng: ${model.app || ""}\n`;
+
+          output +=
+            `Đặc điểm:\n`;
+
+          output +=
+            `${model.description || ""}\n`;
+
+          output +=
+            "\n------------------------------\n\n";
+
+        }
+      );
+
+    }
+
+
+    output +=
+      "HẾT DỮ LIỆU MODELAsi";
+
+
+    document.getElementById(
+      "previewText"
+    ).value = output;
+
+  };
+
+
+  // ==========================================
+  // COPY ALL DATA
+  // ==========================================
+
+  window.copyAllData = async function() {
+
+    const data =
+      await getAllData();
+
+
+    const description =
+      data.settings?.description || "";
+
+
+    const models =
+      data.models || {};
+
+
+    let output = "";
+
+
+    output +=
+      "MODELAsi\n\n";
+
+
+    output +=
+      "MÔ TẢ:\n";
+
+    output +=
+      description || "(Chưa có mô tả)";
+
+    output += "\n\n";
+
+
+    output +=
+      "CÁC MODEL:\n\n";
+
+
+    Object.values(models)
+      .forEach((model, index) => {
+
+        output +=
+          `MODEL ${index + 1}\n`;
+
+        output +=
+          `Tên model: ${model.name || ""}\n`;
+
+        output +=
+          `App: ${model.app || ""}\n`;
+
+        output +=
+          `Đặc điểm:\n`;
+
+        output +=
+          `${model.description || ""}\n\n`;
+
+      });
+
+
+    try {
+
+      await navigator.clipboard.writeText(
+        output
+      );
+
+
+      showToast(
+        "Đã sao chép toàn bộ dữ liệu ModelAsi!",
+        "success"
+      );
+
+    } catch (error) {
+
+      // Fallback cho trình duyệt không cho Clipboard API
+
+      const temp =
+        document.createElement("textarea");
+
+      temp.value = output;
+
+      document.body.appendChild(temp);
+
+      temp.select();
+
+      document.execCommand("copy");
+
+      temp.remove();
+
+
+      showToast(
+        "Đã sao chép!",
+        "success"
+      );
+
+    }
+
+  };
+
+
+  // ==========================================
+  // ESCAPE HTML
+  // ==========================================
+
+  function escapeHTML(text) {
+
+    return String(text)
+
+      .replaceAll("&", "&amp;")
+
+      .replaceAll("<", "&lt;")
+
+      .replaceAll(">", "&gt;")
+
+      .replaceAll('"', "&quot;")
+
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  // ==========================================
+  // TOAST
+  // ==========================================
+
+  window.showToast = function(
+    message,
+    type = "success"
+  ) {
+
+    const toast =
+      document.createElement("div");
+
+
+    toast.className =
+      `alert alert-${type} position-fixed shadow`;
+
+    toast.style.bottom =
+      "20px";
+
+    toast.style.right =
+      "20px";
+
+    toast.style.zIndex =
+      "9999";
+
+    toast.style.maxWidth =
+      "350px";
+
+
+    toast.textContent =
+      message;
+
+
+    document.body.appendChild(
+      toast
+    );
+
+
+    setTimeout(() => {
+
+      toast.remove();
+
+    }, 3000);
+
+  };
+
+</script>
+
+</body>
+</html>
