@@ -6,21 +6,11 @@
   <title>ModelAsi Manager</title>
 
   <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    body {
-      background: #f4f6f9;
-    }
-
-    .app {
-      max-width: 1100px;
-      margin: auto;
-    }
-
+    body { background: #f4f6f9; }
+    .app { max-width: 1100px; margin: auto; }
     .hero {
       background: linear-gradient(135deg, #0d6efd, #6610f2);
       color: white;
@@ -28,45 +18,15 @@
       padding: 28px;
       margin-bottom: 20px;
     }
-
-    .card {
-      border: 0;
-      border-radius: 18px;
-      box-shadow: 0 5px 20px rgba(0,0,0,.06);
-    }
-
-    .model-card {
-      transition: .2s;
-    }
-
-    .model-card:hover {
-      transform: translateY(-2px);
-    }
-
-    textarea {
-      min-height: 130px;
-      resize: vertical;
-    }
-
-    #previewText {
-      min-height: 500px;
-      font-family: monospace;
-      white-space: pre-wrap;
-    }
-
-    .empty {
-      padding: 40px;
-      text-align: center;
-      color: #777;
-    }
-
-    .status {
-      font-size: 14px;
-    }
-
-    .model-badge {
-      font-size: 12px;
-    }
+    .card { border: 0; border-radius: 18px; box-shadow: 0 5px 20px rgba(0,0,0,.06); }
+    .model-card { transition: .2s; }
+    .model-card:hover { transform: translateY(-2px); }
+    textarea { min-height: 130px; resize: vertical; }
+    #previewText { min-height: 500px; font-family: monospace; white-space: pre-wrap; }
+    .empty { padding: 40px; text-align: center; color: #777; }
+    .model-badge { font-size: 12px; }
+    .category-box { background: #fff; border: 1px solid #dee2e6; border-radius: 12px; padding: 16px; margin-bottom: 15px; }
+    .subcategory-box { background: #f8f9fa; border: 1px dashed #ced4da; border-radius: 10px; padding: 12px; margin-top: 10px; }
   </style>
 </head>
 
@@ -77,9 +37,7 @@
   <!-- HEADER -->
   <div class="hero">
     <h1 class="fw-bold mb-2">🤖 ModelAsi</h1>
-    <p class="mb-0">
-      Trình quản lý dữ liệu mô phỏng AI
-    </p>
+    <p class="mb-0">Trình quản lý dữ liệu mô phỏng AI</p>
   </div>
 
   <!-- FIREBASE STATUS -->
@@ -89,1095 +47,642 @@
       <span id="firebaseStatus">Đang kết nối Firestore...</span>
     </span>
 
-    <span id="modelCount" class="badge bg-primary">
-      0 model
-    </span>
+    <span id="modelCount" class="badge bg-primary">0 model</span>
   </div>
-
 
   <!-- MÔ TẢ MODELASI -->
   <div class="card p-4 mb-4">
-
-    <h4 class="fw-bold">
-      📖 Mô tả ModelAsi
-    </h4>
-
-    <p class="text-muted">
-      Viết hướng dẫn để AI hiểu ModelAsi là gì và cách sử dụng dữ liệu model.
-    </p>
-
-    <textarea
-      id="systemDescription"
-      class="form-control mb-3"
-      placeholder="Ví dụ: ModelAsi là hệ thống dữ liệu dùng để mô phỏng hành vi, phong cách và đặc điểm của các AI khác..."
-    ></textarea>
-
-    <button
-      id="saveDescriptionBtn"
-      class="btn btn-primary"
-    >
-      💾 Lưu mô tả
-    </button>
-
+    <h4 class="fw-bold">📖 Mô tả ModelAsi</h4>
+    <p class="text-muted">Viết hướng dẫn để AI hiểu ModelAsi là gì và cách sử dụng dữ liệu model.</p>
+    <textarea id="systemDescription" class="form-control mb-3" placeholder="Ví dụ: ModelAsi là hệ thống dữ liệu dùng để mô phỏng hành vi..."></textarea>
+    <button id="saveDescriptionBtn" class="btn btn-primary">💾 Lưu mô tả</button>
   </div>
 
-
-  <!-- QUẢN LÝ MODEL -->
+  <!-- QUẢN LÝ MỤC & MODEL -->
   <div class="card p-4 mb-4">
-
     <div class="d-flex justify-content-between align-items-center mb-3">
-
       <div>
-        <h4 class="fw-bold mb-1">
-          🧠 Quản lý Model
-        </h4>
-
-        <p class="text-muted mb-0">
-          Thêm, chỉnh sửa hoặc xóa model.
-        </p>
+        <h4 class="fw-bold mb-1">📁 Quản lý Mục & Model</h4>
+        <p class="text-muted mb-0">Thêm mục lớn, mục phụ tối đa 1 cấp và quản lý model trong mục.</p>
       </div>
 
-      <button
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#modelModal"
-        onclick="openAddModal()"
-      >
-        + Thêm model
-      </button>
-
+      <button class="btn btn-success" id="btnAddMainCat">+ Thêm mục lớn</button>
     </div>
 
-    <div id="modelsList"></div>
-
+    <div id="categoriesList"></div>
   </div>
-
 
   <!-- ACTION -->
   <div class="card p-4 mb-4">
-
-    <h4 class="fw-bold mb-3">
-      📦 Dữ liệu ModelAsi
-    </h4>
-
+    <h4 class="fw-bold mb-3">📦 Dữ liệu ModelAsi</h4>
     <div class="d-flex flex-wrap gap-2">
-
-      <button
-        class="btn btn-success"
-        onclick="copyAllData()"
-      >
-        📋 Sao chép toàn bộ
-      </button>
-
-      <button
-        class="btn btn-outline-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#previewModal"
-        onclick="generatePreview()"
-      >
-        👁️ Xem trước
-      </button>
-
+      <button class="btn btn-success" id="btnCopyAll">📋 Sao chép toàn bộ</button>
+      <button class="btn btn-outline-primary" id="btnPreview">👁️ Xem trước</button>
     </div>
-
   </div>
 
 </div>
 
+<!-- MODAL THÊM / SỬA MỤC -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoryModalTitle">Thêm mục</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editingCategoryId">
+        <input type="hidden" id="parentCategoryId">
 
-<!-- ========================= -->
+        <div class="mb-3">
+          <label class="form-label fw-bold" id="categoryNameLabel">Tên mục lớn</label>
+          <input type="text" id="categoryName" class="form-control" placeholder="Ví dụ: OpenAI Models">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button class="btn btn-primary" id="btnSaveCategory">💾 Lưu mục</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL THÊM / SỬA MODEL -->
-<!-- ========================= -->
-
-<div
-  class="modal fade"
-  id="modelModal"
-  tabindex="-1"
->
-
+<div class="modal fade" id="modelModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
-
     <div class="modal-content">
-
       <div class="modal-header">
-
-        <h5
-          class="modal-title"
-          id="modelModalTitle"
-        >
-          Thêm model
-        </h5>
-
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-        ></button>
-
+        <h5 class="modal-title" id="modelModalTitle">Thêm model</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body">
-
-        <input
-          type="hidden"
-          id="editingId"
-        >
+        <input type="hidden" id="editingModelIndex">
+        <input type="hidden" id="targetCategoryId">
+        <input type="hidden" id="targetSubcategoryIndex">
 
         <div class="mb-3">
-
-          <label class="form-label fw-bold">
-            Tên model
-          </label>
-
-          <input
-            type="text"
-            id="modelName"
-            class="form-control"
-            placeholder="Ví dụ: GPT-5"
-          >
-
+          <label class="form-label fw-bold">Tên model</label>
+          <input type="text" id="modelName" class="form-control" placeholder="Ví dụ: GPT-5">
         </div>
-
 
         <div class="mb-3">
-
-          <label class="form-label fw-bold">
-            Tên app sử dụng model
-          </label>
-
-          <input
-            type="text"
-            id="appName"
-            class="form-control"
-            placeholder="Ví dụ: ChatGPT"
-          >
-
-          <div class="form-text">
-            Nếu model được sử dụng trong ChatGPT thì ghi ChatGPT.
-          </div>
-
+          <label class="form-label fw-bold">Tên app sử dụng model</label>
+          <input type="text" id="appName" class="form-control" placeholder="Ví dụ: ChatGPT">
         </div>
-
 
         <div class="mb-3">
-
-          <label class="form-label fw-bold">
-            Đặc điểm / mô tả
-          </label>
-
-          <textarea
-            id="modelDescription"
-            class="form-control"
-            placeholder="Mô tả cách model hoạt động, phong cách trả lời, khả năng, tốc độ, suy luận..."
-          ></textarea>
-
-          <div class="form-text">
-            Nội dung này sẽ được đưa vào dữ liệu ModelAsi để AI sử dụng khi mô phỏng model.
-          </div>
-
+          <label class="form-label fw-bold">Đặc điểm / mô tả</label>
+          <textarea id="modelDescription" class="form-control" placeholder="Mô tả cách model hoạt động..."></textarea>
         </div>
-
       </div>
-
-
       <div class="modal-footer">
-
-        <button
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Hủy
-        </button>
-
-        <button
-          class="btn btn-primary"
-          onclick="saveModel()"
-        >
-          💾 Lưu model
-        </button>
-
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button class="btn btn-primary" id="btnSaveModel">💾 Lưu model</button>
       </div>
-
     </div>
-
   </div>
-
 </div>
 
-
-<!-- ========================= -->
 <!-- MODAL XEM TRƯỚC -->
-<!-- ========================= -->
-
-<div
-  class="modal fade"
-  id="previewModal"
-  tabindex="-1"
->
-
+<div class="modal fade" id="previewModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
-
     <div class="modal-content">
-
       <div class="modal-header">
-
-        <h5 class="modal-title">
-          👁️ Xem trước ModelAsi
-        </h5>
-
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-        ></button>
-
+        <h5 class="modal-title">👁️ Xem trước ModelAsi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body">
-
-        <textarea
-          id="previewText"
-          class="form-control"
-          readonly
-        ></textarea>
-
+        <textarea id="previewText" class="form-control" readonly></textarea>
       </div>
-
       <div class="modal-footer">
-
-        <button
-          class="btn btn-success"
-          onclick="copyAllData()"
-        >
-          📋 Sao chép
-        </button>
-
-        <button
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Đóng
-        </button>
-
+        <button class="btn btn-success" id="btnCopyFromModal">📋 Sao chép</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
       </div>
-
     </div>
-
   </div>
-
 </div>
-
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-
-<!-- Firebase Firestore -->
+<!-- Firebase Firestore Logic -->
 <script type="module">
-
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-
   import {
-    getFirestore,
-    doc,
-    setDoc,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    collection,
-    onSnapshot,
-    getDoc,
-    getDocs
+    getFirestore, doc, setDoc, addDoc, updateDoc, deleteDoc, collection, onSnapshot, getDoc, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-
-  // ==========================================
-  // FIREBASE CONFIG
-  // ==========================================
-
   const firebaseConfig = {
-
     apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
-
     authDomain: "dataan-d19b7.firebaseapp.com",
-
     projectId: "dataan-d19b7",
-
-    storageBucket:
-      "dataan-d19b7.firebasestorage.app",
-
-    messagingSenderId:
-      "634110626824",
-
-    appId:
-      "1:634110626824:web:903a5181db232369f495bd",
-
-    measurementId:
-      "G-1LK1W3FPG3"
+    storageBucket: "dataan-d19b7.firebasestorage.app",
+    messagingSenderId: "634110626824",
+    appId: "1:634110626824:web:903a5181db232369f495bd",
+    measurementId: "G-1LK1W3FPG3"
   };
 
-
-  // ==========================================
-  // INITIALIZE FIRESTORE
-  // ==========================================
-
   const app = initializeApp(firebaseConfig);
-
   const db = getFirestore(app);
 
-
-  // ==========================================
-  // FIRESTORE REFERENCES
-  // ==========================================
-
   const settingsDocRef = doc(db, "modelasi", "settings");
-  const modelsCollectionRef = collection(db, "modelasi_models");
+  const categoriesCollectionRef = collection(db, "modelasi_categories");
 
+  // Instances của Bootstrap Modals
+  const categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+  const modelModal = new bootstrap.Modal(document.getElementById('modelModal'));
+  const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
 
-  // ==========================================
-  // FIREBASE STATUS
-  // ==========================================
+  // Cập nhật trạng thái
+  document.getElementById("firebaseStatus").textContent = "Đã kết nối Firestore";
+  document.getElementById("statusDot").className = "text-success";
 
-  const statusText =
-    document.getElementById("firebaseStatus");
-
-  const statusDot =
-    document.getElementById("statusDot");
-
-
-  statusText.textContent =
-    "Đã kết nối Firestore";
-
-  statusDot.className =
-    "text-success";
-
-
-  // ==========================================
-  // LOAD DESCRIPTION
-  // ==========================================
-
+  // Realtime Listen Description
   onSnapshot(settingsDocRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      if (data && data.description) {
-        document.getElementById("systemDescription").value = data.description;
-      }
+    if (docSnap.exists() && docSnap.data().description) {
+      document.getElementById("systemDescription").value = docSnap.data().description;
     }
   });
 
-
-  // ==========================================
-  // SAVE DESCRIPTION
-  // ==========================================
-
-  document
-    .getElementById("saveDescriptionBtn")
-    .addEventListener("click", async () => {
-
-      const description =
-        document.getElementById(
-          "systemDescription"
-        ).value.trim();
-
-
-      try {
-
-        await setDoc(settingsDocRef, {
-          description: description
-        }, { merge: true });
-
-        showToast(
-          "Đã lưu mô tả ModelAsi!",
-          "success"
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          "Không thể lưu mô tả.",
-          "danger"
-        );
-
-      }
-
-    });
-
-
-  // ==========================================
-  // LOAD MODELS
-  // ==========================================
-
-  onSnapshot(modelsCollectionRef, (snapshot) => {
-    const models = {};
-    snapshot.forEach((docItem) => {
-      models[docItem.id] = docItem.data();
-    });
-    renderModels(models);
+  // Save Description
+  document.getElementById("saveDescriptionBtn").addEventListener("click", async () => {
+    const description = document.getElementById("systemDescription").value.trim();
+    try {
+      await setDoc(settingsDocRef, { description }, { merge: true });
+      showToast("Đã lưu mô tả ModelAsi!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể lưu mô tả.", "danger");
+    }
   });
 
+  // Realtime Listen Categories
+  onSnapshot(categoriesCollectionRef, (snapshot) => {
+    const categories = {};
+    let totalModels = 0;
+    snapshot.forEach((docItem) => {
+      const data = docItem.data();
+      categories[docItem.id] = data;
+      if (data.models) totalModels += data.models.length;
+      if (data.subCategories) {
+        data.subCategories.forEach(sub => {
+          if (sub.models) totalModels += sub.models.length;
+        });
+      }
+    });
 
-  // ==========================================
-  // RENDER MODELS
-  // ==========================================
+    document.getElementById("modelCount").textContent = `${totalModels} model`;
+    renderCategories(categories);
+  });
 
-  function renderModels(models) {
-
-    const container =
-      document.getElementById("modelsList");
-
-    const count =
-      Object.keys(models).length;
-
-
-    document.getElementById(
-      "modelCount"
-    ).textContent =
-      `${count} model`;
-
-
-    if (count === 0) {
-
+  function renderCategories(categories) {
+    const container = document.getElementById("categoriesList");
+    if (Object.keys(categories).length === 0) {
       container.innerHTML = `
         <div class="empty">
-          <div style="font-size:45px">🤖</div>
-          <h5>Chưa có model</h5>
-          <p>Hãy thêm model đầu tiên.</p>
-        </div>
-      `;
-
+          <div style="font-size:45px">📁</div>
+          <h5>Chưa có mục nào</h5>
+          <p>Hãy thêm mục lớn đầu tiên.</p>
+        </div>`;
       return;
     }
 
-
     container.innerHTML = "";
 
+    Object.entries(categories).forEach(([catId, cat]) => {
+      const catBox = document.createElement("div");
+      catBox.className = "category-box";
 
-    Object.entries(models)
-      .forEach(([id, model]) => {
+      const collapseId = `catCollapse_${catId}`;
+      const modelsCount = (cat.models ? cat.models.length : 0) + 
+                          (cat.subCategories ? cat.subCategories.reduce((a, b) => a + (b.models ? b.models.length : 0), 0) : 0);
 
-        const card =
-          document.createElement("div");
+      let subHtml = "";
+      const hasSub = cat.subCategories && cat.subCategories.length > 0;
 
-        card.className =
-          "card model-card border mb-3 p-3";
+      if (hasSub) {
+        cat.subCategories.forEach((sub, subIndex) => {
+          let subModelsHtml = "";
+          if (sub.models && sub.models.length > 0) {
+            sub.models.forEach((model, mIndex) => {
+              const descId = `desc_${catId}_sub_${subIndex}_${mIndex}`;
+              subModelsHtml += `
+                <div class="card model-card border mb-2 p-2 bg-white">
+                  <div class="d-flex justify-content-between gap-3 align-items-start">
+                    <div class="flex-grow-1">
+                      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h6 class="fw-bold mb-0">${escapeHTML(model.name)}</h6>
+                        <span class="badge bg-secondary model-badge">${escapeHTML(model.app)}</span>
+                      </div>
+                      <button class="btn btn-sm btn-outline-secondary mb-1 py-0 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#${descId}">
+                        📖 Đặc điểm
+                      </button>
+                      <div class="collapse" id="${descId}">
+                        <div class="card card-body bg-light text-muted p-2 mt-1" style="white-space:pre-wrap; font-size: 13px;">
+                          ${escapeHTML(model.description)}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex gap-1">
+                      <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-model" data-cat-id="${catId}" data-sub-index="${subIndex}" data-index="${mIndex}">✏️</button>
+                      <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-model" data-cat-id="${catId}" data-sub-index="${subIndex}" data-index="${mIndex}">🗑️</button>
+                    </div>
+                  </div>
+                </div>`;
+            });
+          } else {
+            subModelsHtml = `<p class="text-muted small mb-2">Chưa có model trong mục phụ này.</p>`;
+          }
 
-        // Tạo id duy nhất cho từng nút collapse mô tả
-        const descId = `descCollapse_${id}`;
-
-        card.innerHTML = `
-
-          <div class="d-flex justify-content-between gap-3 align-items-start">
-
-            <div class="flex-grow-1">
-
-              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-
-                <h5 class="fw-bold mb-0">
-                  ${escapeHTML(model.name || "Không tên")}
-                </h5>
-
-                <span class="badge bg-primary model-badge">
-                  ${escapeHTML(model.app || "Không rõ app")}
-                </span>
-
-              </div>
-
-              <!-- Nút bấm để xem mô tả đặc điểm -->
-              <button 
-                class="btn btn-sm btn-outline-secondary mb-2" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#${descId}" 
-                aria-expanded="false" 
-                aria-controls="${descId}"
-              >
-                📖 Xem đặc điểm
-              </button>
-
-              <!-- Nội dung mô tả được ẩn/hiện bằng Collapse -->
-              <div class="collapse" id="${descId}">
-                <div class="card card-body bg-light text-muted mt-1 p-2" style="white-space:pre-wrap">
-                  ${escapeHTML(model.description || "Chưa có mô tả.")}
+          subHtml += `
+            <div class="subcategory-box">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-primary">↳ Mục phụ: ${escapeHTML(sub.name)}</span>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-primary py-0 px-2 btn-add-model" data-cat-id="${catId}" data-sub-index="${subIndex}">+ Thêm model</button>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-sub" data-cat-id="${catId}">🗑️</button>
                 </div>
               </div>
-
-            </div>
-
-
-            <div class="d-flex gap-2 align-items-start">
-
-              <button
-                class="btn btn-sm btn-outline-primary"
-                onclick="editModel('${id}')"
-              >
-                ✏️
-              </button>
-
-              <button
-                class="btn btn-sm btn-outline-danger"
-                onclick="deleteModel('${id}')"
-              >
-                🗑️
-              </button>
-
-            </div>
-
-          </div>
-
-        `;
-
-
-        container.appendChild(card);
-
-      });
-
-  }
-
-
-  // ==========================================
-  // ADD MODEL
-  // ==========================================
-
-  window.openAddModal = function() {
-
-    document.getElementById(
-      "modelModalTitle"
-    ).textContent = "Thêm model";
-
-
-    document.getElementById(
-      "editingId"
-    ).value = "";
-
-
-    document.getElementById(
-      "modelName"
-    ).value = "";
-
-
-    document.getElementById(
-      "appName"
-    ).value = "";
-
-
-    document.getElementById(
-      "modelDescription"
-    ).value = "";
-
-  };
-
-
-  // ==========================================
-  // EDIT MODEL
-  // ==========================================
-
-  window.editModel = async function(id) {
-
-    try {
-      const docRef = doc(db, "modelasi_models", id);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        showToast("Không tìm thấy model.", "danger");
-        return;
+              ${subModelsHtml}
+            </div>`;
+        });
       }
 
-      const model = docSnap.data();
+      let mainModelsHtml = "";
+      if (cat.models && cat.models.length > 0) {
+        cat.models.forEach((model, mIndex) => {
+          const descId = `desc_${catId}_main_${mIndex}`;
+          mainModelsHtml += `
+            <div class="card model-card border mb-2 p-2 bg-white">
+              <div class="d-flex justify-content-between gap-3 align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <h6 class="fw-bold mb-0">${escapeHTML(model.name)}</h6>
+                    <span class="badge bg-primary model-badge">${escapeHTML(model.app)}</span>
+                  </div>
+                  <button class="btn btn-sm btn-outline-secondary mb-1 py-0 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#${descId}">
+                    📖 Đặc điểm
+                  </button>
+                  <div class="collapse" id="${descId}">
+                    <div class="card card-body bg-light text-muted p-2 mt-1" style="white-space:pre-wrap; font-size: 13px;">
+                      ${escapeHTML(model.description)}
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-model" data-cat-id="${catId}" data-sub-index="" data-index="${mIndex}">✏️</button>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-model" data-cat-id="${catId}" data-sub-index="" data-index="${mIndex}">🗑️</button>
+                </div>
+              </div>
+            </div>`;
+        });
+      }
+
+      catBox.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#${collapseId}" style="cursor: pointer;">
+            <h5 class="fw-bold mb-0">📁 ${escapeHTML(cat.name)}</h5>
+            <span class="badge bg-secondary">${modelsCount} model</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary btn-edit-cat" data-cat-id="${catId}" data-cat-name="${escapeHTML(cat.name)}">✏️ Sửa mục</button>
+            <button class="btn btn-sm btn-outline-danger btn-delete-cat" data-cat-id="${catId}">🗑️ Xóa mục</button>
+          </div>
+        </div>
+
+        <div class="collapse mt-3" id="${collapseId}">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-sm btn-primary btn-add-model" data-cat-id="${catId}" data-sub-index="">+ Thêm model vào mục lớn</button>
+            ${!hasSub ? `<button class="btn btn-sm btn-outline-success btn-add-sub" data-cat-id="${catId}">+ Thêm mục phụ (Tối đa 1)</button>` : ""}
+          </div>
+
+          <div class="mb-2">
+            ${cat.models && cat.models.length > 0 ? mainModelsHtml : '<p class="text-muted small">Chưa có model ở mục lớn này.</p>'}
+          </div>
+
+          ${subHtml}
+        </div>`;
+
+      container.appendChild(catBox);
+    });
+  }
+
+  // --- SỰ KIỆN SỰ CỐ / CÁC NÚT BẤM (DELEGATION) ---
+  document.addEventListener("click", async (e) => {
+    const btnEditModel = e.target.closest(".btn-edit-model");
+    const btnDeleteModel = e.target.closest(".btn-delete-model");
+    const btnAddModel = e.target.closest(".btn-add-model");
+    const btnAddSub = e.target.closest(".btn-add-sub");
+    const btnDeleteSub = e.target.closest(".btn-delete-sub");
+    const btnEditCat = e.target.closest(".btn-edit-cat");
+    const btnDeleteCat = e.target.closest(".btn-delete-cat");
+
+    if (btnAddModel) {
+      openAddModelModal(btnAddModel.dataset.catId, btnAddModel.dataset.subIndex);
+    }
+    if (btnEditModel) {
+      openEditModelModal(btnEditModel.dataset.catId, btnEditModel.dataset.subIndex, btnEditModel.dataset.index);
+    }
+    if (btnDeleteModel) {
+      deleteModel(btnDeleteModel.dataset.catId, btnDeleteModel.dataset.subIndex, btnDeleteModel.dataset.index);
+    }
+    if (btnAddSub) {
+      openAddSubcategoryModal(btnAddSub.dataset.catId);
+    }
+    if (btnDeleteSub) {
+      deleteSubCategory(btnDeleteSub.dataset.catId);
+    }
+    if (btnEditCat) {
+      openEditCategoryModal(btnEditCat.dataset.catId, btnEditCat.dataset.catName);
+    }
+    if (btnDeleteCat) {
+      deleteCategory(btnDeleteCat.dataset.catId);
+    }
+  });
+
+  // Nút Thêm mục lớn ở ngoài
+  document.getElementById("btnAddMainCat").addEventListener("click", () => {
+    document.getElementById("categoryModalTitle").textContent = "Thêm mục lớn";
+    document.getElementById("editingCategoryId").value = "";
+    document.getElementById("parentCategoryId").value = "";
+    document.getElementById("categoryNameLabel").textContent = "Tên mục lớn";
+    document.getElementById("categoryName").value = "";
+    categoryModal.show();
+  });
+
+  function openEditCategoryModal(id, name) {
+    document.getElementById("categoryModalTitle").textContent = "Chỉnh sửa mục";
+    document.getElementById("editingCategoryId").value = id;
+    document.getElementById("parentCategoryId").value = "";
+    document.getElementById("categoryNameLabel").textContent = "Tên mục";
+    document.getElementById("categoryName").value = name;
+    categoryModal.show();
+  }
+
+  function openAddSubcategoryModal(catId) {
+    document.getElementById("categoryModalTitle").textContent = "Thêm mục phụ";
+    document.getElementById("editingCategoryId").value = catId;
+    document.getElementById("parentCategoryId").value = "sub";
+    document.getElementById("categoryNameLabel").textContent = "Tên mục phụ (Tối đa 1)";
+    document.getElementById("categoryName").value = "";
+    categoryModal.show();
+  }
+
+  // LƯU MỤC (LỚN / PHỤ)
+  document.getElementById("btnSaveCategory").addEventListener("click", async () => {
+    const id = document.getElementById("editingCategoryId").value;
+    const isSub = document.getElementById("parentCategoryId").value === "sub";
+    const name = document.getElementById("categoryName").value.trim();
+
+    if (!name) return showToast("Vui lòng nhập tên mục.", "warning");
+
+    try {
+      if (isSub) {
+        const docRef = doc(db, "modelasi_categories", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const subCategories = docSnap.data().subCategories || [];
+          if (subCategories.length >= 1) return showToast("Chỉ cho phép tối đa 1 mục phụ!", "warning");
+          subCategories.push({ name, models: [] });
+          await updateDoc(docRef, { subCategories });
+          showToast("Đã thêm mục phụ!", "success");
+        }
+      } else {
+        if (id) {
+          await updateDoc(doc(db, "modelasi_categories", id), { name });
+          showToast("Đã cập nhật tên mục!", "success");
+        } else {
+          await addDoc(categoriesCollectionRef, { name, models: [], subCategories: [] });
+          showToast("Đã thêm mục lớn!", "success");
+        }
+      }
+      categoryModal.hide();
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể lưu mục.", "danger");
+    }
+  });
+
+  async function deleteCategory(id) {
+    if (!confirm("Bạn có chắc muốn xóa mục này cùng toàn bộ model bên trong?")) return;
+    try {
+      await deleteDoc(doc(db, "modelasi_categories", id));
+      showToast("Đã xóa mục.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể xóa mục.", "danger");
+    }
+  }
+
+  async function deleteSubCategory(catId) {
+    if (!confirm("Bạn có chắc muốn xóa mục phụ này?")) return;
+    try {
+      await updateDoc(doc(db, "modelasi_categories", catId), { subCategories: [] });
+      showToast("Đã xóa mục phụ.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể xóa mục phụ.", "danger");
+    }
+  }
+
+  // MODAL CẤU HÌNH MODEL
+  function openAddModelModal(catId, subIndex = "") {
+    document.getElementById("modelModalTitle").textContent = "Thêm model";
+    document.getElementById("editingModelIndex").value = "";
+    document.getElementById("targetCategoryId").value = catId;
+    document.getElementById("targetSubcategoryIndex").value = subIndex;
+    document.getElementById("modelName").value = "";
+    document.getElementById("appName").value = "";
+    document.getElementById("modelDescription").value = "";
+    modelModal.show();
+  }
+
+  async function openEditModelModal(catId, subIndex, index) {
+    try {
+      const docSnap = await getDoc(doc(db, "modelasi_categories", catId));
+      if (!docSnap.exists()) return;
+      const data = docSnap.data();
+      let model = null;
+
+      if (subIndex !== "" && subIndex !== undefined && subIndex !== null) {
+        model = data.subCategories[parseInt(subIndex)].models[parseInt(index)];
+      } else {
+        model = data.models[parseInt(index)];
+      }
 
       document.getElementById("modelModalTitle").textContent = "Chỉnh sửa model";
-      document.getElementById("editingId").value = id;
+      document.getElementById("editingModelIndex").value = index;
+      document.getElementById("targetCategoryId").value = catId;
+      document.getElementById("targetSubcategoryIndex").value = subIndex ?? "";
       document.getElementById("modelName").value = model.name || "";
       document.getElementById("appName").value = model.app || "";
       document.getElementById("modelDescription").value = model.description || "";
 
-      const modal = new bootstrap.Modal(document.getElementById("modelModal"));
-      modal.show();
-
-    } catch (error) {
-      console.error(error);
+      modelModal.show();
+    } catch (err) {
+      console.error(err);
       showToast("Không thể tải thông tin model.", "danger");
     }
+  }
 
-  };
+  // LƯU MODEL (THÊM / SỬA)
+  document.getElementById("btnSaveModel").addEventListener("click", async () => {
+    const editingIndex = document.getElementById("editingModelIndex").value;
+    const catId = document.getElementById("targetCategoryId").value;
+    const subIndexStr = document.getElementById("targetSubcategoryIndex").value;
+    const name = document.getElementById("modelName").value.trim();
+    const appName = document.getElementById("appName").value.trim();
+    const description = document.getElementById("modelDescription").value.trim();
 
-
-  // ==========================================
-  // SAVE MODEL
-  // ==========================================
-
-  window.saveModel = async function() {
-
-    const id =
-      document.getElementById(
-        "editingId"
-      ).value;
-
-
-    const name =
-      document.getElementById(
-        "modelName"
-      ).value.trim();
-
-
-    const appName =
-      document.getElementById(
-        "appName"
-      ).value.trim();
-
-
-    const description =
-      document.getElementById(
-        "modelDescription"
-      ).value.trim();
-
-
-    if (!name) {
-
-      showToast(
-        "Vui lòng nhập tên model.",
-        "warning"
-      );
-
-      return;
-
+    if (!name || !appName || !description) {
+      return showToast("Vui lòng điền đầy đủ thông tin model.", "warning");
     }
 
-
-    if (!appName) {
-
-      showToast(
-        "Vui lòng nhập tên app.",
-        "warning"
-      );
-
-      return;
-
-    }
-
-
-    if (!description) {
-
-      showToast(
-        "Vui lòng nhập đặc điểm model.",
-        "warning"
-      );
-
-      return;
-
-    }
-
-
-    const modelData = {
-
-      name: name,
-
-      app: appName,
-
-      description: description,
-
-      updatedAt:
-        Date.now()
-
-    };
-
+    const modelData = { name, app: appName, description, updatedAt: Date.now() };
 
     try {
+      const docRef = doc(db, "modelasi_categories", catId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return;
 
-      if (id) {
+      const data = docSnap.data();
+      const isSub = subIndexStr !== "" && subIndexStr !== undefined && subIndexStr !== null;
 
-        await updateDoc(
-          doc(db, "modelasi_models", id),
-          modelData
-        );
-
-        showToast(
-          "Đã cập nhật model!",
-          "success"
-        );
-
+      if (editingIndex !== "") {
+        // Sửa
+        const idx = parseInt(editingIndex);
+        if (isSub) {
+          data.subCategories[parseInt(subIndexStr)].models[idx] = modelData;
+        } else {
+          data.models[idx] = modelData;
+        }
       } else {
-
-        await addDoc(
-          modelsCollectionRef,
-          {
-            ...modelData,
-            createdAt:
-              Date.now()
-          }
-        );
-
-        showToast(
-          "Đã thêm model!",
-          "success"
-        );
-
+        // Thêm mới
+        if (isSub) {
+          const sIdx = parseInt(subIndexStr);
+          if (!data.subCategories[sIdx].models) data.subCategories[sIdx].models = [];
+          data.subCategories[sIdx].models.push(modelData);
+        } else {
+          if (!data.models) data.models = [];
+          data.models.push(modelData);
+        }
       }
 
+      await updateDoc(docRef, { models: data.models || [], subCategories: data.subCategories || [] });
+      showToast("Đã lưu model thành công!", "success");
+      modelModal.hide();
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể lưu model.", "danger");
+    }
+  });
 
-      const modalElement =
-        document.getElementById(
-          "modelModal"
-        );
+  // XÓA MODEL (MỤC LỚN HOẶC MỤC PHỤ)
+  async function deleteModel(catId, subIndex, index) {
+    if (!confirm("Bạn có chắc muốn xóa model này?")) return;
+    try {
+      const docRef = doc(db, "modelasi_categories", catId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return;
 
+      const data = docSnap.data();
+      const isSub = subIndex !== "" && subIndex !== undefined && subIndex !== null;
 
-      const modal =
-        bootstrap.Modal.getInstance(
-          modalElement
-        );
-
-
-      if (modal) {
-        modal.hide();
+      if (isSub) {
+        data.subCategories[parseInt(subIndex)].models.splice(parseInt(index), 1);
+      } else {
+        data.models.splice(parseInt(index), 1);
       }
 
-
-      openAddModal();
-
-    } catch (error) {
-
-      console.error(error);
-
-      showToast(
-        "Không thể lưu model.",
-        "danger"
-      );
-
-    }
-
-  };
-
-
-  // ==========================================
-  // DELETE MODEL
-  // ==========================================
-
-  window.deleteModel = async function(id) {
-
-    const ok =
-      confirm(
-        "Bạn có chắc muốn xóa model này không?"
-      );
-
-
-    if (!ok) return;
-
-
-    try {
-
-      await deleteDoc(
-        doc(db, "modelasi_models", id)
-      );
-
-
-      showToast(
-        "Đã xóa model.",
-        "success"
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      showToast(
-        "Không thể xóa model.",
-        "danger"
-      );
-
-    }
-
-  };
-
-
-  // ==========================================
-  // GET ALL DATA
-  // ==========================================
-
-  async function getAllData() {
-    try {
-      const settingsSnap = await getDoc(settingsDocRef);
-      const settings = settingsSnap.exists() ? settingsSnap.data() : {};
-
-      const modelsSnap = await getDocs(modelsCollectionRef);
-      const models = {};
-      modelsSnap.forEach((docItem) => {
-        models[docItem.id] = docItem.data();
-      });
-
-      return {
-        settings: settings,
-        models: models
-      };
-    } catch (error) {
-      console.error(error);
-      return { settings: {}, models: {} };
+      await updateDoc(docRef, { models: data.models || [], subCategories: data.subCategories || [] });
+      showToast("Đã xóa model.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Không thể xóa model.", "danger");
     }
   }
 
+  // XEM TRƯỚC / SAO CHÉP
+  async function generatePreview() {
+    const settingsSnap = await getDoc(settingsDocRef);
+    const settings = settingsSnap.exists() ? settingsSnap.data() : {};
 
-  // ==========================================
-  // GENERATE MODELASI TEXT
-  // ==========================================
+    const catSnap = await getDocs(categoriesCollectionRef);
+    const categories = [];
+    catSnap.forEach((d) => categories.push(d.data()));
 
-  window.generatePreview = async function() {
+    let output = "==============================\nMODELAsi\n==============================\n\n";
+    output += "MÔ TẢ MODELAsi:\n" + (settings.description || "(Chưa có mô tả)") + "\n\n";
+    output += "DANH SÁCH MỤC & MODEL:\n==============================\n\n";
 
-    const data =
-      await getAllData();
-
-
-    const description =
-      data.settings?.description || "";
-
-
-    const models =
-      data.models || {};
-
-
-    let output = "";
-
-
-    output +=
-      "==============================\n";
-
-    output +=
-      "MODELAsi\n";
-
-    output +=
-      "==============================\n\n";
-
-
-    output +=
-      "MÔ TẢ MODELAsi:\n";
-
-    output +=
-      description || "(Chưa có mô tả)";
-
-    output += "\n\n";
-
-
-    output +=
-      "DANH SÁCH MODEL:\n";
-
-    output +=
-      "==============================\n\n";
-
-
-    const entries =
-      Object.values(models);
-
-
-    if (entries.length === 0) {
-
-      output +=
-        "Chưa có model.\n";
-
+    if (categories.length === 0) {
+      output += "Chưa có dữ liệu mục.\n";
     } else {
-
-      entries.forEach(
-        (model, index) => {
-
-          output +=
-            `MODEL ${index + 1}\n`;
-
-          output +=
-            `Tên model: ${model.name || ""}\n`;
-
-          output +=
-            `App sử dụng: ${model.app || ""}\n`;
-
-          output +=
-            `Đặc điểm:\n`;
-
-          output +=
-            `${model.description || ""}\n`;
-
-          output +=
-            "\n------------------------------\n\n";
-
+      categories.forEach((cat, cIdx) => {
+        output += `MỤC ${cIdx + 1}: ${cat.name}\n`;
+        if (cat.models && cat.models.length > 0) {
+          cat.models.forEach((m) => {
+            output += `  - Model: ${m.name} (${m.app})\n    Đặc điểm: ${m.description}\n`;
+          });
         }
-      );
 
-    }
-
-
-    output +=
-      "HẾT DỮ LIỆU MODELAsi";
-
-
-    document.getElementById(
-      "previewText"
-    ).value = output;
-
-  };
-
-
-  // ==========================================
-  // COPY ALL DATA
-  // ==========================================
-
-  window.copyAllData = async function() {
-
-    const data =
-      await getAllData();
-
-
-    const description =
-      data.settings?.description || "";
-
-
-    const models =
-      data.models || {};
-
-
-    let output = "";
-
-
-    output +=
-      "MODELAsi\n\n";
-
-
-    output +=
-      "MÔ TẢ:\n";
-
-    output +=
-      description || "(Chưa có mô tả)";
-
-    output += "\n\n";
-
-
-    output +=
-      "CÁC MODEL:\n\n";
-
-
-    Object.values(models)
-      .forEach((model, index) => {
-
-        output +=
-          `MODEL ${index + 1}\n`;
-
-        output +=
-          `Tên model: ${model.name || ""}\n`;
-
-        output +=
-          `App: ${model.app || ""}\n`;
-
-        output +=
-          `Đặc điểm:\n`;
-
-        output +=
-          `${model.description || ""}\n\n`;
-
+        if (cat.subCategories && cat.subCategories.length > 0) {
+          cat.subCategories.forEach(sub => {
+            output += `  ↳ Mục phụ: ${sub.name}\n`;
+            if (sub.models && sub.models.length > 0) {
+              sub.models.forEach((m) => {
+                output += `    - Model: ${m.name} (${m.app})\n      Đặc điểm: ${m.description}\n`;
+              });
+            }
+          });
+        }
+        output += "\n------------------------------\n\n";
       });
-
-
-    try {
-
-      await navigator.clipboard.writeText(
-        output
-      );
-
-
-      showToast(
-        "Đã sao chép toàn bộ dữ liệu ModelAsi!",
-        "success"
-      );
-
-    } catch (error) {
-
-      // Fallback cho trình duyệt không cho Clipboard API
-
-      const temp =
-        document.createElement("textarea");
-
-      temp.value = output;
-
-      document.body.appendChild(temp);
-
-      temp.select();
-
-      document.execCommand("copy");
-
-      temp.remove();
-
-
-      showToast(
-        "Đã sao chép!",
-        "success"
-      );
-
     }
+    output += "HẾT DỮ LIỆU MODELAsi";
+    document.getElementById("previewText").value = output;
+  }
 
-  };
+  document.getElementById("btnPreview").addEventListener("click", async () => {
+    await generatePreview();
+    previewModal.show();
+  });
 
+  async function copyData() {
+    await generatePreview();
+    const text = document.getElementById("previewText").value;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Đã sao chép toàn bộ dữ liệu!", "success");
+    } catch (err) {
+      showToast("Không thể tự động chép, vui lòng chép thủ công.", "warning");
+    }
+  }
 
-  // ==========================================
-  // ESCAPE HTML
-  // ==========================================
+  document.getElementById("btnCopyAll").addEventListener("click", copyData);
+  document.getElementById("btnCopyFromModal").addEventListener("click", copyData);
 
   function escapeHTML(text) {
-
-    return String(text)
-
+    return String(text || "")
       .replaceAll("&", "&amp;")
-
       .replaceAll("<", "&lt;")
-
       .replaceAll(">", "&gt;")
-
       .replaceAll('"', "&quot;")
-
       .replaceAll("'", "&#039;");
-
   }
 
-
-  // ==========================================
-  // TOAST
-  // ==========================================
-
-  window.showToast = function(
-    message,
-    type = "success"
-  ) {
-
-    const toast =
-      document.createElement("div");
-
-
-    toast.className =
-      `alert alert-${type} position-fixed shadow`;
-
-    toast.style.bottom =
-      "20px";
-
-    toast.style.right =
-      "20px";
-
-    toast.style.zIndex =
-      "9999";
-
-    toast.style.maxWidth =
-      "350px";
-
-
-    toast.textContent =
-      message;
-
-
-    document.body.appendChild(
-      toast
-    );
-
-
-    setTimeout(() => {
-
-      toast.remove();
-
-    }, 3000);
-
-  };
-
+  function showToast(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `alert alert-${type} position-fixed shadow`;
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.zIndex = "9999";
+    toast.style.maxWidth = "350px";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
 </script>
 
 </body>
