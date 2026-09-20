@@ -1,689 +1,1720 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ModelAsi Manager</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ModelAsi - Trình Tổng Hợp Model AI</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Marked JS for Full Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0c;
+            --bg-secondary: #141418;
+            --bg-card: #1e1e24;
+            --bg-hover: #2a2a34;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --border-color: #2e2e38;
+            --border-light: #404050;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
 
-  <style>
-    body { background: #f4f6f9; }
-    .app { max-width: 1100px; margin: auto; }
-    .hero {
-      background: linear-gradient(135deg, #0d6efd, #6610f2);
-      color: white;
-      border-radius: 20px;
-      padding: 28px;
-      margin-bottom: 20px;
-    }
-    .card { border: 0; border-radius: 18px; box-shadow: 0 5px 20px rgba(0,0,0,.06); }
-    .model-card { transition: .2s; }
-    .model-card:hover { transform: translateY(-2px); }
-    textarea { min-height: 130px; resize: vertical; }
-    #previewText { min-height: 500px; font-family: monospace; white-space: pre-wrap; }
-    .empty { padding: 40px; text-align: center; color: #777; }
-    .model-badge { font-size: 12px; }
-    .category-box { background: #fff; border: 1px solid #dee2e6; border-radius: 12px; padding: 16px; margin-bottom: 15px; }
-    .subcategory-box { background: #f8f9fa; border: 1px dashed #ced4da; border-radius: 10px; padding: 12px; margin-top: 10px; }
-  </style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            user-select: text;
+            -webkit-user-select: text;
+            touch-action: manipulation;
+        }
+
+        /* App Layout Structure */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100vw;
+        }
+
+        .app-header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.5rem 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .model-select-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            max-width: 60vw;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .model-select-bar:hover {
+            background-color: var(--bg-hover);
+            border-color: var(--accent-color);
+        }
+
+        .model-select-bar.unselected {
+            border-color: #eab308;
+            background-color: rgba(234, 179, 8, 0.12);
+        }
+
+        .model-bar-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #ffffff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .model-bar-badge {
+            font-size: 0.72rem;
+            background-color: rgba(37, 99, 235, 0.35);
+            border: 1px solid rgba(37, 99, 235, 0.6);
+            color: #93c5fd;
+            padding: 0.12rem 0.5rem;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+        .brand-logo-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #121216;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .brand-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .brand-logo-icon {
+            font-size: 0.88rem;
+            color: #ffffff;
+        }
+
+        .category-tab-scroll {
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            padding-bottom: 0.4rem;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-tab-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .cat-chip {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cat-chip:hover {
+            color: #ffffff;
+            border-color: var(--border-light);
+        }
+
+        .cat-chip.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+        }
+
+        .chat-message.ai {
+            align-self: flex-start;
+        }
+
+        .msg-sender {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+        }
+
+        .msg-bubble {
+            padding: 0.85rem 1.1rem;
+            border-radius: 14px;
+            word-wrap: break-word;
+            position: relative;
+            line-height: 1.55;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+            font-size: 0.98rem;
+        }
+
+        .chat-message.user .msg-bubble {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-message.ai .msg-bubble {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 2px;
+        }
+
+        .code-block-container {
+            background-color: #0b0b0e;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 0.65rem 0;
+            overflow: hidden;
+        }
+
+        .code-block-header {
+            background-color: #16161c;
+            padding: 0.45rem 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-content-wrapper pre {
+            margin: 0;
+            padding: 0.85rem;
+            background-color: #050508;
+            overflow-x: auto;
+        }
+
+        .code-content-wrapper code {
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.88em;
+            color: #38bdf8;
+            white-space: pre;
+        }
+
+        .chat-footer {
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 0.65rem 0.85rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.35rem 0.6rem 0.35rem 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper.disabled-input {
+            opacity: 0.6;
+            background-color: #121216;
+            cursor: not-allowed;
+        }
+
+        .input-wrapper:focus-within:not(.disabled-input) {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+        }
+
+        .chat-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            outline: none;
+            width: 100%;
+            resize: none;
+            max-height: 120px;
+            padding: 0.35rem 0;
+            font-size: 0.98rem;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-header, .modal-footer {
+            border-color: var(--border-color) !important;
+        }
+
+        /* High-contrast Admin Tabs */
+        .nav-tabs {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ffffff;
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .form-control, .form-select {
+            color: #ffffff !important;
+            background-color: #0e0e12 !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            color: #ffffff !important;
+            background-color: #121218 !important;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.3) !important;
+        }
+
+        .form-label {
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 0.35rem;
+        }
+
+        /* Offcanvas & Session Items */
+        .offcanvas {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.45rem;
+            background-color: var(--bg-card);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .session-item:hover {
+            border-color: var(--border-light);
+            background-color: var(--bg-hover);
+        }
+
+        .session-item.active {
+            border-color: var(--accent-color);
+            background-color: rgba(37, 99, 235, 0.25);
+        }
+
+        .model-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .model-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .model-item-btn {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.65rem 0.85rem;
+            margin-bottom: 0.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-align: left;
+            width: 100%;
+        }
+
+        .model-item-btn:hover, .model-item-btn.active {
+            background-color: rgba(37, 99, 235, 0.22);
+            border-color: var(--accent-color);
+        }
+
+        .model-category-header {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #60a5fa;
+            margin-top: 0.85rem;
+            margin-bottom: 0.4rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="container py-4 app">
+    <div id="app-container">
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary border-0 text-light p-1 px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+                    <i class="fa-solid fa-bars fs-5"></i>
+                </button>
+                <h1 class="h6 mb-0 fw-bold text-light d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-robot text-primary"></i> ModelAsi
+                </h1>
+            </div>
 
-  <!-- HEADER -->
-  <div class="hero">
-    <h1 class="fw-bold mb-2">🤖 ModelAsi</h1>
-    <p class="mb-0">Trình quản lý dữ liệu mô phỏng AI</p>
-  </div>
+            <!-- Sleek Horizontal Model Select Bar with AI Brand Logo -->
+            <div class="model-select-bar" id="modelSelectBar" onclick="window.openModelPickerModal()">
+                <div id="barLogoContainer" class="d-flex align-items-center">
+                    <i class="fa-solid fa-microchip text-primary"></i>
+                </div>
+                <div class="model-bar-title" id="barModelName">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+                </div>
+                <span class="model-bar-badge" id="barAppName">AI</span>
+                <i class="fa-solid fa-chevron-down text-light opacity-75 ms-auto" style="font-size: 0.75rem;"></i>
+            </div>
+        </header>
 
-  <!-- FIREBASE STATUS -->
-  <div class="alert alert-secondary d-flex justify-content-between align-items-center">
-    <span>
-      <span id="statusDot">●</span>
-      <span id="firebaseStatus">Đang kết nối Firestore...</span>
-    </span>
+        <!-- Main Chat Message Feed -->
+        <main class="chat-body" id="chatBody">
+            <!-- Messages rendered dynamically -->
+        </main>
 
-    <span id="modelCount" class="badge bg-primary">0 model</span>
-  </div>
-
-  <!-- MÔ TẢ MODELASI -->
-  <div class="card p-4 mb-4">
-    <h4 class="fw-bold">📖 Mô tả ModelAsi</h4>
-    <p class="text-muted">Viết hướng dẫn để AI hiểu ModelAsi là gì và cách sử dụng dữ liệu model.</p>
-    <textarea id="systemDescription" class="form-control mb-3" placeholder="Ví dụ: ModelAsi là hệ thống dữ liệu dùng để mô phỏng hành vi..."></textarea>
-    <button id="saveDescriptionBtn" class="btn btn-primary">💾 Lưu mô tả</button>
-  </div>
-
-  <!-- QUẢN LÝ MỤC & MODEL -->
-  <div class="card p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <h4 class="fw-bold mb-1">📁 Quản lý Mục & Model</h4>
-        <p class="text-muted mb-0">Thêm mục lớn, mục phụ tối đa 1 cấp và quản lý model trong mục.</p>
-      </div>
-
-      <button class="btn btn-success" id="btnAddMainCat">+ Thêm mục lớn</button>
+        <!-- Chat Input Footer -->
+        <footer class="chat-footer">
+            <div class="input-wrapper" id="inputWrapper">
+                <textarea id="chatInput" class="chat-input" rows="1" placeholder="Nhập tin nhắn..."></textarea>
+                <button id="sendBtn" class="btn btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="text-center mt-1">
+                <small class="text-secondary" style="font-size: 0.72rem;" id="footerHintText">Nhấp đúp vào tin nhắn để sao chép • ModelAsi Platform</small>
+            </div>
+        </footer>
     </div>
 
-    <div id="categoriesList"></div>
-  </div>
+    <!-- Model Picker Modal -->
+    <div class="modal fade" id="modelPickerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2 px-3">
+                    <h6 class="modal-title fw-bold text-light d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-primary"></i> Chọn AI Model
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <!-- Search Input -->
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="modelSearchInput" class="form-control" placeholder="Search, tìm model theo tên, app hay phân loại...">
+                    </div>
 
-  <!-- ACTION -->
-  <div class="card p-4 mb-4">
-    <h4 class="fw-bold mb-3">📦 Dữ liệu ModelAsi</h4>
-    <div class="d-flex flex-wrap gap-2">
-      <button class="btn btn-success" id="btnCopyAll">📋 Sao chép toàn bộ</button>
-      <button class="btn btn-outline-primary" id="btnPreview">👁️ Xem trước</button>
-    </div>
-  </div>
+                    <!-- Category Chips Filter -->
+                    <div class="category-tab-scroll mb-3" id="categoryChipsContainer">
+                        <!-- Chips rendered dynamically -->
+                    </div>
 
-</div>
-
-<!-- MODAL THÊM / SỬA MỤC -->
-<div class="modal fade" id="categoryModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="categoryModalTitle">Thêm mục</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editingCategoryId">
-        <input type="hidden" id="parentCategoryId">
-
-        <div class="mb-3">
-          <label class="form-label fw-bold" id="categoryNameLabel">Tên mục lớn</label>
-          <input type="text" id="categoryName" class="form-control" placeholder="Ví dụ: OpenAI Models">
+                    <!-- Grouped Model List -->
+                    <div id="modalModelListContainer" style="max-height: 48vh; overflow-y: auto;">
+                        <!-- Models rendered dynamically -->
+                    </div>
+                </div>
+                <div class="modal-footer py-2 px-3 d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="window.deselectModel()">
+                        <i class="fa-solid fa-ban me-1"></i> Hủy Chọn Model
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary text-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-        <button class="btn btn-primary" id="btnSaveCategory">💾 Lưu mục</button>
-      </div>
     </div>
-  </div>
-</div>
 
-<!-- MODAL THÊM / SỬA MODEL -->
-<div class="modal fade" id="modelModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modelModalTitle">Thêm model</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editingModelIndex">
-        <input type="hidden" id="targetCategoryId">
-        <input type="hidden" id="targetSubcategoryIndex">
-
-        <div class="mb-3">
-          <label class="form-label fw-bold">Tên model</label>
-          <input type="text" id="modelName" class="form-control" placeholder="Ví dụ: GPT-5">
+    <!-- Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-light fw-bold">
+                <i class="fa-solid fa-comments text-primary me-2"></i>Lịch Sử Trò Chuyện
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold">Tên app sử dụng model</label>
-          <input type="text" id="appName" class="form-control" placeholder="Ví dụ: ChatGPT">
+        <div class="offcanvas-body d-flex flex-column justify-content-between">
+            <div class="overflow-y-auto pe-1" style="max-height: calc(100vh - 180px);">
+                <button id="btnNewChat" class="btn btn-outline-primary w-100 mb-3 d-flex align-items-center justify-content-center gap-2 fw-semibold text-light">
+                    <i class="fa-solid fa-plus text-primary"></i> Tạo Đoạn Chat Mới
+                </button>
+                <small class="text-secondary fw-bold d-block mb-2">Danh sách đoạn chat (Tối đa 5):</small>
+                <div id="sessionList">
+                    <!-- Session list rendered dynamically -->
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-3 mt-2">
+                <button class="btn btn-sm btn-outline-danger w-100 fw-bold" onclick="window.clearAllChatHistory()">
+                    <i class="fa-solid fa-trash-can me-1"></i> Xóa Tất Cả Lịch Sử Trò Chuyện
+                </button>
+            </div>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold">Đặc điểm / mô tả</label>
-          <textarea id="modelDescription" class="form-control" placeholder="Mô tả cách model hoạt động..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-        <button class="btn btn-primary" id="btnSaveModel">💾 Lưu model</button>
-      </div>
     </div>
-  </div>
-</div>
 
-<!-- MODAL XEM TRƯỚC -->
-<div class="modal fade" id="previewModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">👁️ Xem trước ModelAsi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <textarea id="previewText" class="form-control" readonly></textarea>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-success" id="btnCopyFromModal">📋 Sao chép</button>
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-      </div>
-    </div>
-  </div>
-</div>
+    <!-- Admin Management Modal -->
+    <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2 px-3">
+                    <h5 class="modal-title fw-bold text-light" id="adminModalLabel">
+                        <i class="fa-solid fa-sliders text-primary me-2"></i>Bảng Quản Trị ModelAsi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-api-tab" data-bs-toggle="tab" data-bs-target="#tab-api" type="button" role="tab"><i class="fa-solid fa-key me-1"></i> API & Engine</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-system-tab" data-bs-toggle="tab" data-bs-target="#tab-system" type="button" role="tab"><i class="fa-solid fa-gear me-1"></i> System Chính</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-model-tab" data-bs-toggle="tab" data-bs-target="#tab-model" type="button" role="tab"><i class="fa-solid fa-brain me-1"></i> Quản Lý Models</button>
+                        </li>
+                    </ul>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Firebase Firestore Logic -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import {
-    getFirestore, doc, setDoc, addDoc, updateDoc, deleteDoc, collection, onSnapshot, getDoc, getDocs
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
-    authDomain: "dataan-d19b7.firebaseapp.com",
-    projectId: "dataan-d19b7",
-    storageBucket: "dataan-d19b7.firebasestorage.app",
-    messagingSenderId: "634110626824",
-    appId: "1:634110626824:web:903a5181db232369f495bd",
-    measurementId: "G-1LK1W3FPG3"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const settingsDocRef = doc(db, "modelasi", "settings");
-  const categoriesCollectionRef = collection(db, "modelasi_categories");
-
-  // Instances của Bootstrap Modals
-  const categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
-  const modelModal = new bootstrap.Modal(document.getElementById('modelModal'));
-  const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-
-  // Cập nhật trạng thái
-  document.getElementById("firebaseStatus").textContent = "Đã kết nối Firestore";
-  document.getElementById("statusDot").className = "text-success";
-
-  // Realtime Listen Description
-  onSnapshot(settingsDocRef, (docSnap) => {
-    if (docSnap.exists() && docSnap.data().description) {
-      document.getElementById("systemDescription").value = docSnap.data().description;
-    }
-  });
-
-  // Save Description
-  document.getElementById("saveDescriptionBtn").addEventListener("click", async () => {
-    const description = document.getElementById("systemDescription").value.trim();
-    try {
-      await setDoc(settingsDocRef, { description }, { merge: true });
-      showToast("Đã lưu mô tả ModelAsi!", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể lưu mô tả.", "danger");
-    }
-  });
-
-  // Realtime Listen Categories
-  onSnapshot(categoriesCollectionRef, (snapshot) => {
-    const categories = {};
-    let totalModels = 0;
-    snapshot.forEach((docItem) => {
-      const data = docItem.data();
-      categories[docItem.id] = data;
-      if (data.models) totalModels += data.models.length;
-      if (data.subCategories) {
-        data.subCategories.forEach(sub => {
-          if (sub.models) totalModels += sub.models.length;
-        });
-      }
-    });
-
-    document.getElementById("modelCount").textContent = `${totalModels} model`;
-    renderCategories(categories);
-  });
-
-  function renderCategories(categories) {
-    const container = document.getElementById("categoriesList");
-    if (Object.keys(categories).length === 0) {
-      container.innerHTML = `
-        <div class="empty">
-          <div style="font-size:45px">📁</div>
-          <h5>Chưa có mục nào</h5>
-          <p>Hãy thêm mục lớn đầu tiên.</p>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = "";
-
-    Object.entries(categories).forEach(([catId, cat]) => {
-      const catBox = document.createElement("div");
-      catBox.className = "category-box";
-
-      const collapseId = `catCollapse_${catId}`;
-      const modelsCount = (cat.models ? cat.models.length : 0) + 
-                          (cat.subCategories ? cat.subCategories.reduce((a, b) => a + (b.models ? b.models.length : 0), 0) : 0);
-
-      let subHtml = "";
-      const hasSub = cat.subCategories && cat.subCategories.length > 0;
-
-      if (hasSub) {
-        cat.subCategories.forEach((sub, subIndex) => {
-          let subModelsHtml = "";
-          if (sub.models && sub.models.length > 0) {
-            sub.models.forEach((model, mIndex) => {
-              const descId = `desc_${catId}_sub_${subIndex}_${mIndex}`;
-              subModelsHtml += `
-                <div class="card model-card border mb-2 p-2 bg-white">
-                  <div class="d-flex justify-content-between gap-3 align-items-start">
-                    <div class="flex-grow-1">
-                      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                        <h6 class="fw-bold mb-0">${escapeHTML(model.name)}</h6>
-                        <span class="badge bg-secondary model-badge">${escapeHTML(model.app)}</span>
-                      </div>
-                      <button class="btn btn-sm btn-outline-secondary mb-1 py-0 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#${descId}">
-                        📖 Đặc điểm
-                      </button>
-                      <div class="collapse" id="${descId}">
-                        <div class="card card-body bg-light text-muted p-2 mt-1" style="white-space:pre-wrap; font-size: 13px;">
-                          ${escapeHTML(model.description)}
+                    <div class="tab-content" id="adminTabsContent">
+                        <div class="tab-pane fade show active" id="tab-api" role="tabpanel">
+                            <div class="alert alert-dark border border-secondary mb-3 text-light">
+                                <small><i class="fa-solid fa-circle-info text-info me-1"></i> Nhập danh sách Groq API Keys (Tối đa 20 key). Hệ thống sẽ tự động chuyển key tiếp theo âm thầm nếu key hiện tại lỗi hoặc hết lượt.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Groq Model Base Engine Tag:</label>
+                                <input type="text" id="adminGroqEngine" class="form-control" placeholder="llama-3.3-70b-versatile">
+                                <small class="text-secondary d-block mt-1">Ví dụ: llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768, gemma2-9b-it</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Danh sách Groq API Keys (Tối đa 20):</label>
+                                <div id="apiKeyListContainer" class="d-flex flex-column gap-2 mb-2"></div>
+                                <button id="btnAddKey" class="btn btn-sm btn-outline-success text-light">
+                                    <i class="fa-solid fa-plus text-success me-1"></i> Thêm API Key Dự Phòng
+                                </button>
+                            </div>
                         </div>
-                      </div>
-                    </div>
-                    <div class="d-flex gap-1">
-                      <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-model" data-cat-id="${catId}" data-sub-index="${subIndex}" data-index="${mIndex}">✏️</button>
-                      <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-model" data-cat-id="${catId}" data-sub-index="${subIndex}" data-index="${mIndex}">🗑️</button>
-                    </div>
-                  </div>
-                </div>`;
-            });
-          } else {
-            subModelsHtml = `<p class="text-muted small mb-2">Chưa có model trong mục phụ này.</p>`;
-          }
 
-          subHtml += `
-            <div class="subcategory-box">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-bold text-primary">↳ Mục phụ: ${escapeHTML(sub.name)}</span>
-                <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-primary py-0 px-2 btn-add-model" data-cat-id="${catId}" data-sub-index="${subIndex}">+ Thêm model</button>
-                  <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-sub" data-cat-id="${catId}">🗑️</button>
-                </div>
-              </div>
-              ${subModelsHtml}
-            </div>`;
-        });
-      }
+                        <div class="tab-pane fade" id="tab-system" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">System Prompt Chính (Hệ Thống):</label>
+                                <textarea id="adminMainSystem" class="form-control" rows="8" placeholder="Nhập câu lệnh System chính cho AI đọc..."></textarea>
+                                <small class="text-secondary d-block mt-1">System này sẽ được hợp nhất với System đặc điểm của từng AI Model khi trò chuyện.</small>
+                            </div>
+                        </div>
 
-      let mainModelsHtml = "";
-      if (cat.models && cat.models.length > 0) {
-        cat.models.forEach((model, mIndex) => {
-          const descId = `desc_${catId}_main_${mIndex}`;
-          mainModelsHtml += `
-            <div class="card model-card border mb-2 p-2 bg-white">
-              <div class="d-flex justify-content-between gap-3 align-items-start">
-                <div class="flex-grow-1">
-                  <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                    <h6 class="fw-bold mb-0">${escapeHTML(model.name)}</h6>
-                    <span class="badge bg-primary model-badge">${escapeHTML(model.app)}</span>
-                  </div>
-                  <button class="btn btn-sm btn-outline-secondary mb-1 py-0 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#${descId}">
-                    📖 Đặc điểm
-                  </button>
-                  <div class="collapse" id="${descId}">
-                    <div class="card card-body bg-light text-muted p-2 mt-1" style="white-space:pre-wrap; font-size: 13px;">
-                      ${escapeHTML(model.description)}
+                        <div class="tab-pane fade" id="tab-model" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-light m-0 fw-bold">Danh Sách Model AI Trong Hệ Thống</h6>
+                                <button class="btn btn-sm btn-primary" onclick="window.openCreateModelModal()">
+                                    <i class="fa-solid fa-plus me-1"></i> Tạo Model Mới
+                                </button>
+                            </div>
+                            <div id="adminModelList"></div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-                <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-model" data-cat-id="${catId}" data-sub-index="" data-index="${mIndex}">✏️</button>
-                  <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-model" data-cat-id="${catId}" data-sub-index="" data-index="${mIndex}">🗑️</button>
+                <div class="modal-footer">
+                    <span id="dbSaveStatus" class="me-auto small fw-bold"></span>
+                    <button type="button" class="btn btn-secondary text-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" id="btnSaveToDB" class="btn btn-primary">
+                        <i class="fa-solid fa-cloud-arrow-up me-1"></i> Lưu Lên Database
+                    </button>
                 </div>
-              </div>
-            </div>`;
-        });
-      }
-
-      catBox.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="d-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#${collapseId}" style="cursor: pointer;">
-            <h5 class="fw-bold mb-0">📁 ${escapeHTML(cat.name)}</h5>
-            <span class="badge bg-secondary">${modelsCount} model</span>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary btn-edit-cat" data-cat-id="${catId}" data-cat-name="${escapeHTML(cat.name)}">✏️ Sửa mục</button>
-            <button class="btn btn-sm btn-outline-danger btn-delete-cat" data-cat-id="${catId}">🗑️ Xóa mục</button>
-          </div>
+            </div>
         </div>
+    </div>
 
-        <div class="collapse mt-3" id="${collapseId}">
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <button class="btn btn-sm btn-primary btn-add-model" data-cat-id="${catId}" data-sub-index="">+ Thêm model vào mục lớn</button>
-            ${!hasSub ? `<button class="btn btn-sm btn-outline-success btn-add-sub" data-cat-id="${catId}">+ Thêm mục phụ (Tối đa 1)</button>` : ""}
-          </div>
+    <!-- Modal Form Create/Edit AI Model -->
+    <div class="modal fade" id="modelEditModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header py-2 px-3">
+                    <h5 class="modal-title fw-bold text-light" id="modelEditTitle">Tạo Model AI Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <input type="hidden" id="editModelId">
+                    <div class="mb-3">
+                        <label class="form-label">Tên Model AI:</label>
+                        <input type="text" id="editModelName" class="form-control" placeholder="Ví dụ: ModelAsi Flash Pro">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tên Ứng Dụng Chạy Model (App Name):</label>
+                        <input type="text" id="editModelAppName" class="form-control" placeholder="Ví dụ: ChatGPT, Claude, Gemini, Meta AI">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL Logo / Icon Tùy Chỉnh (Tùy chọn):</label>
+                        <input type="url" id="editModelLogoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phân Loại / Nhóm (Category):</label>
+                        <input type="text" id="editModelCategory" class="form-control" list="categoryOptions" placeholder="Ví dụ: Chung, Lập trình, Sáng tạo, Trợ lý...">
+                        <datalist id="categoryOptions">
+                            <option value="Chung"></option>
+                            <option value="Lập trình"></option>
+                            <option value="Văn học & Sáng tạo"></option>
+                            <option value="Trợ lý Chat"></option>
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">System Đặc Điểm Model Phụ:</label>
+                        <textarea id="editModelSubSystem" class="form-control" rows="5" placeholder="Ghi mô tả đặc điểm tính cách, khả năng giả lập của Model AI này..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary text-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="btnSaveModelItem" class="btn btn-success">Xác Nhận Lưu Model</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-          <div class="mb-2">
-            ${cat.models && cat.models.length > 0 ? mainModelsHtml : '<p class="text-muted small">Chưa có model ở mục lớn này.</p>'}
-          </div>
+    <div class="toast-container" id="toastContainer"></div>
 
-          ${subHtml}
-        </div>`;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-      container.appendChild(catBox);
-    });
-  }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // --- SỰ KIỆN SỰ CỐ / CÁC NÚT BẤM (DELEGATION) ---
-  document.addEventListener("click", async (e) => {
-    const btnEditModel = e.target.closest(".btn-edit-model");
-    const btnDeleteModel = e.target.closest(".btn-delete-model");
-    const btnAddModel = e.target.closest(".btn-add-model");
-    const btnAddSub = e.target.closest(".btn-add-sub");
-    const btnDeleteSub = e.target.closest(".btn-delete-sub");
-    const btnEditCat = e.target.closest(".btn-edit-cat");
-    const btnDeleteCat = e.target.closest(".btn-delete-cat");
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDj-T4aD5KQoiES7NRQgu1ttZNRoGxmmxQ",
+            authDomain: "modelasi.firebaseapp.com",
+            projectId: "modelasi",
+            storageBucket: "modelasi.firebasestorage.app",
+            messagingSenderId: "888089710172",
+            appId: "1:888089710172:web:2260e175113bae30e76099",
+            measurementId: "G-J3ZSVN8T1K"
+        };
 
-    if (btnAddModel) {
-      openAddModelModal(btnAddModel.dataset.catId, btnAddModel.dataset.subIndex);
-    }
-    if (btnEditModel) {
-      openEditModelModal(btnEditModel.dataset.catId, btnEditModel.dataset.subIndex, btnEditModel.dataset.index);
-    }
-    if (btnDeleteModel) {
-      deleteModel(btnDeleteModel.dataset.catId, btnDeleteModel.dataset.subIndex, btnDeleteModel.dataset.index);
-    }
-    if (btnAddSub) {
-      openAddSubcategoryModal(btnAddSub.dataset.catId);
-    }
-    if (btnDeleteSub) {
-      deleteSubCategory(btnDeleteSub.dataset.catId);
-    }
-    if (btnEditCat) {
-      openEditCategoryModal(btnEditCat.dataset.catId, btnEditCat.dataset.catName);
-    }
-    if (btnDeleteCat) {
-      deleteCategory(btnDeleteCat.dataset.catId);
-    }
-  });
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-  // Nút Thêm mục lớn ở ngoài
-  document.getElementById("btnAddMainCat").addEventListener("click", () => {
-    document.getElementById("categoryModalTitle").textContent = "Thêm mục lớn";
-    document.getElementById("editingCategoryId").value = "";
-    document.getElementById("parentCategoryId").value = "";
-    document.getElementById("categoryNameLabel").textContent = "Tên mục lớn";
-    document.getElementById("categoryName").value = "";
-    categoryModal.show();
-  });
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            window.showToast("Thao tác chuột phải đã bị vô hiệu hóa!", "warning");
+        });
 
-  function openEditCategoryModal(id, name) {
-    document.getElementById("categoryModalTitle").textContent = "Chỉnh sửa mục";
-    document.getElementById("editingCategoryId").value = id;
-    document.getElementById("parentCategoryId").value = "";
-    document.getElementById("categoryNameLabel").textContent = "Tên mục";
-    document.getElementById("categoryName").value = name;
-    categoryModal.show();
-  }
-
-  function openAddSubcategoryModal(catId) {
-    document.getElementById("categoryModalTitle").textContent = "Thêm mục phụ";
-    document.getElementById("editingCategoryId").value = catId;
-    document.getElementById("parentCategoryId").value = "sub";
-    document.getElementById("categoryNameLabel").textContent = "Tên mục phụ (Tối đa 1)";
-    document.getElementById("categoryName").value = "";
-    categoryModal.show();
-  }
-
-  // LƯU MỤC (LỚN / PHỤ)
-  document.getElementById("btnSaveCategory").addEventListener("click", async () => {
-    const id = document.getElementById("editingCategoryId").value;
-    const isSub = document.getElementById("parentCategoryId").value === "sub";
-    const name = document.getElementById("categoryName").value.trim();
-
-    if (!name) return showToast("Vui lòng nhập tên mục.", "warning");
-
-    try {
-      if (isSub) {
-        const docRef = doc(db, "modelasi_categories", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const subCategories = docSnap.data().subCategories || [];
-          if (subCategories.length >= 1) return showToast("Chỉ cho phép tối đa 1 mục phụ!", "warning");
-          subCategories.push({ name, models: [] });
-          await updateDoc(docRef, { subCategories });
-          showToast("Đã thêm mục phụ!", "success");
-        }
-      } else {
-        if (id) {
-          await updateDoc(doc(db, "modelasi_categories", id), { name });
-          showToast("Đã cập nhật tên mục!", "success");
-        } else {
-          await addDoc(categoriesCollectionRef, { name, models: [], subCategories: [] });
-          showToast("Đã thêm mục lớn!", "success");
-        }
-      }
-      categoryModal.hide();
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể lưu mục.", "danger");
-    }
-  });
-
-  async function deleteCategory(id) {
-    if (!confirm("Bạn có chắc muốn xóa mục này cùng toàn bộ model bên trong?")) return;
-    try {
-      await deleteDoc(doc(db, "modelasi_categories", id));
-      showToast("Đã xóa mục.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể xóa mục.", "danger");
-    }
-  }
-
-  async function deleteSubCategory(catId) {
-    if (!confirm("Bạn có chắc muốn xóa mục phụ này?")) return;
-    try {
-      await updateDoc(doc(db, "modelasi_categories", catId), { subCategories: [] });
-      showToast("Đã xóa mục phụ.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể xóa mục phụ.", "danger");
-    }
-  }
-
-  // MODAL CẤU HÌNH MODEL
-  function openAddModelModal(catId, subIndex = "") {
-    document.getElementById("modelModalTitle").textContent = "Thêm model";
-    document.getElementById("editingModelIndex").value = "";
-    document.getElementById("targetCategoryId").value = catId;
-    document.getElementById("targetSubcategoryIndex").value = subIndex;
-    document.getElementById("modelName").value = "";
-    document.getElementById("appName").value = "";
-    document.getElementById("modelDescription").value = "";
-    modelModal.show();
-  }
-
-  async function openEditModelModal(catId, subIndex, index) {
-    try {
-      const docSnap = await getDoc(doc(db, "modelasi_categories", catId));
-      if (!docSnap.exists()) return;
-      const data = docSnap.data();
-      let model = null;
-
-      if (subIndex !== "" && subIndex !== undefined && subIndex !== null) {
-        model = data.subCategories[parseInt(subIndex)].models[parseInt(index)];
-      } else {
-        model = data.models[parseInt(index)];
-      }
-
-      document.getElementById("modelModalTitle").textContent = "Chỉnh sửa model";
-      document.getElementById("editingModelIndex").value = index;
-      document.getElementById("targetCategoryId").value = catId;
-      document.getElementById("targetSubcategoryIndex").value = subIndex ?? "";
-      document.getElementById("modelName").value = model.name || "";
-      document.getElementById("appName").value = model.app || "";
-      document.getElementById("modelDescription").value = model.description || "";
-
-      modelModal.show();
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể tải thông tin model.", "danger");
-    }
-  }
-
-  // LƯU MODEL (THÊM / SỬA)
-  document.getElementById("btnSaveModel").addEventListener("click", async () => {
-    const editingIndex = document.getElementById("editingModelIndex").value;
-    const catId = document.getElementById("targetCategoryId").value;
-    const subIndexStr = document.getElementById("targetSubcategoryIndex").value;
-    const name = document.getElementById("modelName").value.trim();
-    const appName = document.getElementById("appName").value.trim();
-    const description = document.getElementById("modelDescription").value.trim();
-
-    if (!name || !appName || !description) {
-      return showToast("Vui lòng điền đầy đủ thông tin model.", "warning");
-    }
-
-    const modelData = { name, app: appName, description, updatedAt: Date.now() };
-
-    try {
-      const docRef = doc(db, "modelasi_categories", catId);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return;
-
-      const data = docSnap.data();
-      const isSub = subIndexStr !== "" && subIndexStr !== undefined && subIndexStr !== null;
-
-      if (editingIndex !== "") {
-        // Sửa
-        const idx = parseInt(editingIndex);
-        if (isSub) {
-          data.subCategories[parseInt(subIndexStr)].models[idx] = modelData;
-        } else {
-          data.models[idx] = modelData;
-        }
-      } else {
-        // Thêm mới
-        if (isSub) {
-          const sIdx = parseInt(subIndexStr);
-          if (!data.subCategories[sIdx].models) data.subCategories[sIdx].models = [];
-          data.subCategories[sIdx].models.push(modelData);
-        } else {
-          if (!data.models) data.models = [];
-          data.models.push(modelData);
-        }
-      }
-
-      await updateDoc(docRef, { models: data.models || [], subCategories: data.subCategories || [] });
-      showToast("Đã lưu model thành công!", "success");
-      modelModal.hide();
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể lưu model.", "danger");
-    }
-  });
-
-  // XÓA MODEL (MỤC LỚN HOẶC MỤC PHỤ)
-  async function deleteModel(catId, subIndex, index) {
-    if (!confirm("Bạn có chắc muốn xóa model này?")) return;
-    try {
-      const docRef = doc(db, "modelasi_categories", catId);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return;
-
-      const data = docSnap.data();
-      const isSub = subIndex !== "" && subIndex !== undefined && subIndex !== null;
-
-      if (isSub) {
-        data.subCategories[parseInt(subIndex)].models.splice(parseInt(index), 1);
-      } else {
-        data.models.splice(parseInt(index), 1);
-      }
-
-      await updateDoc(docRef, { models: data.models || [], subCategories: data.subCategories || [] });
-      showToast("Đã xóa model.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Không thể xóa model.", "danger");
-    }
-  }
-
-  // XEM TRƯỚC / SAO CHÉP
-  async function generatePreview() {
-    const settingsSnap = await getDoc(settingsDocRef);
-    const settings = settingsSnap.exists() ? settingsSnap.data() : {};
-
-    const catSnap = await getDocs(categoriesCollectionRef);
-    const categories = [];
-    catSnap.forEach((d) => categories.push(d.data()));
-
-    let output = "==============================\nMODELAsi\n==============================\n\n";
-    output += "MÔ TẢ MODELAsi:\n" + (settings.description || "(Chưa có mô tả)") + "\n\n";
-    output += "DANH SÁCH MỤC & MODEL:\n==============================\n\n";
-
-    if (categories.length === 0) {
-      output += "Chưa có dữ liệu mục.\n";
-    } else {
-      categories.forEach((cat, cIdx) => {
-        output += `MỤC ${cIdx + 1}: ${cat.name}\n`;
-        if (cat.models && cat.models.length > 0) {
-          cat.models.forEach((m) => {
-            output += `  - Model: ${m.name} (${m.app})\n    Đặc điểm: ${m.description}\n`;
-          });
-        }
-
-        if (cat.subCategories && cat.subCategories.length > 0) {
-          cat.subCategories.forEach(sub => {
-            output += `  ↳ Mục phụ: ${sub.name}\n`;
-            if (sub.models && sub.models.length > 0) {
-              sub.models.forEach((m) => {
-                output += `    - Model: ${m.name} (${m.app})\n      Đặc điểm: ${m.description}\n`;
-              });
+        document.addEventListener('keydown', e => {
+            if (
+                e.keyCode === 123 || 
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
+                (e.ctrlKey && e.keyCode === 85) || 
+                (e.ctrlKey && e.keyCode === 83)
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.showToast("Phím tắt bảo mật đã bị vô hiệu hóa!", "danger");
+                return false;
             }
-          });
+        });
+
+        const DEFAULT_STATE = {
+            apiKeys: [""],
+            groqEngine: "llama-3.3-70b-versatile",
+            mainSystem: "Bạn là trợ lý AI thông minh ModelAsi. Hãy phản hồi chuẩn xác, định dạng Markdown rõ ràng, trình trình bày chữ sắc nét màu trắng dễ đọc và phản hồi bằng tiếng Việt tự nhiên.",
+            customModels: [],
+            currentModelId: null
+        };
+
+        let state = { ...DEFAULT_STATE };
+        let chatSessions = [];
+        let activeSessionId = null;
+        let selectedCategoryFilter = "ALL";
+
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            headerIds: false
+        });
+
+        window.showToast = function(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-bg-${type} border-0 show mb-2`;
+            toastEl.role = 'alert';
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body py-2 px-3 fw-bold text-light">${msg}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            container.appendChild(toastEl);
+            setTimeout(() => toastEl.remove(), 3500);
+        };
+
+        function getBrandLogoHtml(appName = '', modelName = '', logoUrl = '') {
+            if (logoUrl && logoUrl.trim() !== '') {
+                return `
+                    <div class="brand-logo-box">
+                        <img src="${escapeHTML(logoUrl)}" class="brand-logo-img" alt="Logo" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-robot brand-logo-icon\\'></i>';">
+                    </div>
+                `;
+            }
+
+            const str = (appName + ' ' + modelName).toLowerCase();
+
+            if (str.includes('chatgpt') || str.includes('openai') || str.includes('gpt')) {
+                return `
+                    <div class="brand-logo-box" style="background:#10a37f; border-color:#10a37f;">
+                        <i class="fa-solid fa-bolt brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('claude') || str.includes('anthropic')) {
+                return `
+                    <div class="brand-logo-box" style="background:#d97706; border-color:#d97706;">
+                        <i class="fa-solid fa-brain brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('gemini') || str.includes('google')) {
+                return `
+                    <div class="brand-logo-box" style="background:#2563eb; border-color:#2563eb;">
+                        <i class="fa-solid fa-wand-magic-sparkles brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('llama') || str.includes('meta')) {
+                return `
+                    <div class="brand-logo-box" style="background:#0284c7; border-color:#0284c7;">
+                        <i class="fa-solid fa-infinity brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('deepseek')) {
+                return `
+                    <div class="brand-logo-box" style="background:#0d9488; border-color:#0d9488;">
+                        <i class="fa-solid fa-fish-fins brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('groq')) {
+                return `
+                    <div class="brand-logo-box" style="background:#f97316; border-color:#f97316;">
+                        <i class="fa-solid fa-bolt-lightning brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('mistral')) {
+                return `
+                    <div class="brand-logo-box" style="background:#ea580c; border-color:#ea580c;">
+                        <i class="fa-solid fa-wind brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else if (str.includes('coder') || str.includes('code') || str.includes('dev')) {
+                return `
+                    <div class="brand-logo-box" style="background:#4f46e5; border-color:#4f46e5;">
+                        <i class="fa-solid fa-code brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="brand-logo-box" style="background:#2563eb;">
+                        <i class="fa-solid fa-microchip brand-logo-icon text-white"></i>
+                    </div>
+                `;
+            }
         }
-        output += "\n------------------------------\n\n";
-      });
-    }
-    output += "HẾT DỮ LIỆU MODELAsi";
-    document.getElementById("previewText").value = output;
-  }
 
-  document.getElementById("btnPreview").addEventListener("click", async () => {
-    await generatePreview();
-    previewModal.show();
-  });
+        async function initData() {
+            const savedModelId = localStorage.getItem('modelasi_selected_model_id');
+            if (savedModelId) {
+                state.currentModelId = savedModelId;
+            }
 
-  async function copyData() {
-    await generatePreview();
-    const text = document.getElementById("previewText").value;
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast("Đã sao chép toàn bộ dữ liệu!", "success");
-    } catch (err) {
-      showToast("Không thể tự động chép, vui lòng chép thủ công.", "warning");
-    }
-  }
+            try {
+                const targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'modelasi';
+                const docRef = doc(db, "artifacts", targetAppId, "public", "data", "app_settings", "config");
+                const docSnap = await getDoc(docRef);
 
-  document.getElementById("btnCopyAll").addEventListener("click", copyData);
-  document.getElementById("btnCopyFromModal").addEventListener("click", copyData);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.apiKeys && data.apiKeys.length > 0) state.apiKeys = data.apiKeys;
+                    if (data.groqEngine) state.groqEngine = data.groqEngine;
+                    if (data.mainSystem) state.mainSystem = data.mainSystem;
+                    if (data.customModels) state.customModels = data.customModels;
+                }
+            } catch (e) {
+                console.warn("Lấy LocalStorage fallback do Firebase chưa tải xong hoặc offline:", e);
+                const localState = localStorage.getItem('modelasi_state');
+                if (localState) {
+                    try { 
+                        const parsed = JSON.parse(localState);
+                        if (parsed.customModels) state.customModels = parsed.customModels;
+                        if (parsed.apiKeys) state.apiKeys = parsed.apiKeys;
+                        if (parsed.groqEngine) state.groqEngine = parsed.groqEngine;
+                        if (parsed.mainSystem) state.mainSystem = parsed.mainSystem;
+                    } catch(err){}
+                }
+            }
 
-  function escapeHTML(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+            if (!state.customModels || state.customModels.length === 0) {
+                state.customModels = [
+                    {
+                        id: "mod_default",
+                        name: "ModelAsi Assistant",
+                        appName: "ModelAsi Engine",
+                        category: "Chung",
+                        subSystem: "Bạn là trợ lý AI mặc định của hệ thống ModelAsi, phản hồi chính xác và thân thiện.",
+                        logoUrl: ""
+                    },
+                    {
+                        id: "mod_coder",
+                        name: "Code Master Pro",
+                        appName: "Developer Tool",
+                        category: "Lập trình",
+                        subSystem: "Bạn là chuyên gia lập trình cao cấp. Hãy viết code sạch, chuẩn xác và hỗ trợ sửa lỗi nhanh.",
+                        logoUrl: ""
+                    },
+                    {
+                        id: "mod_gpt4",
+                        name: "ChatGPT-4o Turbo",
+                        appName: "OpenAI",
+                        category: "Trợ lý Chat",
+                        subSystem: "Bạn là ChatGPT-4o của OpenAI. Phản hồi thông minh, logic và chính xác.",
+                        logoUrl: ""
+                    },
+                    {
+                        id: "mod_claude",
+                        name: "Claude 3.5 Sonnet",
+                        appName: "Anthropic",
+                        category: "Văn học & Sáng tạo",
+                        subSystem: "Bạn là Claude 3.5 Sonnet của Anthropic. Phản hồi văn phong tự nhiên, mạch lạc.",
+                        logoUrl: ""
+                    }
+                ];
+            }
 
-  function showToast(message, type = "success") {
-    const toast = document.createElement("div");
-    toast.className = `alert alert-${type} position-fixed shadow`;
-    toast.style.bottom = "20px";
-    toast.style.right = "20px";
-    toast.style.zIndex = "9999";
-    toast.style.maxWidth = "350px";
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-</script>
+            state.customModels.forEach(m => {
+                if (!m.category) m.category = "Chung";
+                if (m.logoUrl === undefined) m.logoUrl = "";
+            });
 
+            if (state.currentModelId && !state.customModels.find(m => m.id === state.currentModelId)) {
+                state.currentModelId = null;
+                localStorage.removeItem('modelasi_selected_model_id');
+            }
+
+            loadChatSessions();
+            updateHeaderModelBar();
+            renderChatMessages();
+        }
+
+        function saveStateToLocal() {
+            localStorage.setItem('modelasi_state', JSON.stringify({
+                apiKeys: state.apiKeys,
+                groqEngine: state.groqEngine,
+                mainSystem: state.mainSystem,
+                customModels: state.customModels
+            }));
+            if (state.currentModelId) {
+                localStorage.setItem('modelasi_selected_model_id', state.currentModelId);
+            } else {
+                localStorage.removeItem('modelasi_selected_model_id');
+            }
+        }
+
+        async function saveStateToFirebase() {
+            const statusEl = document.getElementById('dbSaveStatus');
+            statusEl.className = "me-auto small fw-bold text-info";
+            statusEl.innerText = "Đang lưu...";
+            try {
+                const targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'modelasi';
+                const docRef = doc(db, "artifacts", targetAppId, "public", "data", "app_settings", "config");
+                await setDoc(docRef, {
+                    apiKeys: state.apiKeys.filter(k => k.trim() !== ""),
+                    groqEngine: state.groqEngine,
+                    mainSystem: state.mainSystem,
+                    customModels: state.customModels,
+                    updatedAt: new Date().toISOString()
+                });
+                saveStateToLocal();
+                statusEl.className = "me-auto small fw-bold text-success";
+                statusEl.innerHTML = "<i class='fa-solid fa-check me-1'></i> Đã lưu Firebase thành công!";
+                window.showToast("Đã lưu dữ liệu lên Database thành công!", "success");
+            } catch (err) {
+                console.error("Lỗi lưu Firebase:", err);
+                statusEl.className = "me-auto small fw-bold text-danger";
+                statusEl.innerText = "Lỗi lưu Database!";
+                window.showToast("Lỗi lưu database: " + err.message, "danger");
+            }
+        }
+
+        function loadChatSessions() {
+            const saved = localStorage.getItem('modelasi_chats');
+            const savedActiveId = localStorage.getItem('modelasi_active_session_id');
+
+            if (saved) {
+                try {
+                    chatSessions = JSON.parse(saved);
+                } catch(e) { 
+                    chatSessions = []; 
+                }
+            }
+
+            if (!chatSessions || chatSessions.length === 0) {
+                createNewSession("Đoạn chat mới 1");
+            } else {
+                if (savedActiveId && chatSessions.some(s => s.id === savedActiveId)) {
+                    activeSessionId = savedActiveId;
+                } else {
+                    activeSessionId = chatSessions[0].id;
+                }
+            }
+            saveChatSessions();
+            renderSessionList();
+        }
+
+        function saveChatSessions() {
+            localStorage.setItem('modelasi_chats', JSON.stringify(chatSessions));
+            if (activeSessionId) {
+                localStorage.setItem('modelasi_active_session_id', activeSessionId);
+            }
+        }
+
+        function createNewSession(customTitle) {
+            if (chatSessions.length >= 5) {
+                window.showToast("Tối đa chỉ được tạo 5 đoạn chat!", "warning");
+                return;
+            }
+            const id = 'sess_' + Date.now();
+            const title = customTitle || `Đoạn chat mới ${chatSessions.length + 1}`;
+            const newSess = { id, title, messages: [] };
+            chatSessions.unshift(newSess);
+            activeSessionId = id;
+            saveChatSessions();
+            renderSessionList();
+            renderChatMessages();
+        }
+
+        window.deleteSession = function(id, e) {
+            if (e) e.stopPropagation();
+            if (chatSessions.length <= 1) {
+                window.showToast("Cần giữ lại ít nhất 1 đoạn chat!", "warning");
+                return;
+            }
+            chatSessions = chatSessions.filter(s => s.id !== id);
+            if (activeSessionId === id) {
+                activeSessionId = chatSessions[0].id;
+            }
+            saveChatSessions();
+            renderSessionList();
+            renderChatMessages();
+            window.showToast("Đã xóa đoạn chat!", "info");
+        };
+
+        window.renameSession = function(id, e) {
+            if (e) e.stopPropagation();
+            const sess = chatSessions.find(s => s.id === id);
+            if (!sess) return;
+            const newTitle = prompt("Nhập tên mới cho đoạn chat:", sess.title);
+            if (newTitle && newTitle.trim()) {
+                sess.title = newTitle.trim();
+                saveChatSessions();
+                renderSessionList();
+            }
+        };
+
+        window.clearAllChatHistory = function() {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện không?")) {
+                chatSessions = [];
+                createNewSession("Đoạn chat mới 1");
+                window.showToast("Đã xóa tất cả lịch sử trò chuyện!", "success");
+            }
+        };
+
+        function renderSessionList() {
+            const container = document.getElementById('sessionList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            chatSessions.forEach(sess => {
+                const isActive = sess.id === activeSessionId;
+                const div = document.createElement('div');
+                div.className = `session-item ${isActive ? 'active' : ''}`;
+                div.onclick = () => {
+                    activeSessionId = sess.id;
+                    saveChatSessions();
+                    renderSessionList();
+                    renderChatMessages();
+                };
+
+                div.innerHTML = `
+                    <span class="text-truncate flex-grow-1 me-2 text-light fw-bold" style="font-size: 0.92rem;">
+                        <i class="fa-regular fa-comment-dots me-2 text-primary"></i>${escapeHTML(sess.title)}
+                    </span>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm text-secondary p-0" title="Đổi tên" onclick="window.renameSession('${sess.id}', event)">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-sm text-danger p-0" title="Xóa" onclick="window.deleteSession('${sess.id}', event)">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateHeaderModelBar() {
+            const barModelName = document.getElementById('barModelName');
+            const barAppName = document.getElementById('barAppName');
+            const barLogoContainer = document.getElementById('barLogoContainer');
+            const modelSelectBar = document.getElementById('modelSelectBar');
+            const chatInput = document.getElementById('chatInput');
+            const inputWrapper = document.getElementById('inputWrapper');
+            const sendBtn = document.getElementById('sendBtn');
+            const footerHintText = document.getElementById('footerHintText');
+            
+            const currentModel = state.customModels.find(m => m.id === state.currentModelId);
+            
+            if (currentModel) {
+                modelSelectBar.classList.remove('unselected');
+                barModelName.innerText = currentModel.name;
+                barAppName.innerText = currentModel.appName || 'AI';
+                barLogoContainer.innerHTML = getBrandLogoHtml(currentModel.appName, currentModel.name, currentModel.logoUrl);
+                
+                chatInput.disabled = false;
+                chatInput.placeholder = "Nhập tin nhắn...";
+                inputWrapper.classList.remove('disabled-input');
+                sendBtn.disabled = false;
+                footerHintText.className = "text-secondary";
+                footerHintText.innerHTML = "Nhấp đúp vào tin nhắn để sao chép • ModelAsi Platform";
+            } else {
+                modelSelectBar.classList.add('unselected');
+                barModelName.innerHTML = `<span class="text-warning"><i class="fa-solid fa-triangle-exclamation me-1"></i> Chưa chọn Model</span>`;
+                barAppName.innerText = "Chưa chọn";
+                barLogoContainer.innerHTML = `<div class="brand-logo-box" style="background:#eab308;"><i class="fa-solid fa-ban text-dark"></i></div>`;
+                
+                chatInput.disabled = true;
+                chatInput.placeholder = "Chưa chọn Model - Vui lòng chọn Model để trò chuyện...";
+                inputWrapper.classList.add('disabled-input');
+                sendBtn.disabled = true;
+                footerHintText.className = "text-warning fw-bold";
+                footerHintText.innerHTML = "<i class='fa-solid fa-circle-exclamation me-1'></i> Bạn chưa chọn Model AI nào. Bấm vào thanh trên để chọn Model!";
+            }
+        }
+
+        window.deselectModel = function() {
+            state.currentModelId = null;
+            saveStateToLocal();
+            updateHeaderModelBar();
+            renderChatMessages();
+            
+            const modalEl = document.getElementById('modelPickerModal');
+            const modalObj = bootstrap.Modal.getInstance(modalEl);
+            if (modalObj) modalObj.hide();
+
+            window.showToast("Đã hủy chọn Model! Bạn cần chọn Model mới để có thể trò chuyện.", "warning");
+        };
+
+        window.openModelPickerModal = function() {
+            selectedCategoryFilter = "ALL";
+            document.getElementById('modelSearchInput').value = "";
+            renderCategoryChips();
+            renderModalModelList();
+            const modal = new bootstrap.Modal(document.getElementById('modelPickerModal'));
+            modal.show();
+        };
+
+        function renderCategoryChips() {
+            const container = document.getElementById('categoryChipsContainer');
+            if (!container) return;
+            
+            const categories = Array.from(new Set(state.customModels.map(m => m.category || "Chung")));
+            
+            let html = `
+                <div class="cat-chip ${selectedCategoryFilter === 'ALL' ? 'active' : ''}" onclick="window.filterModelCategory('ALL')">
+                    Tất cả (${state.customModels.length})
+                </div>
+            `;
+
+            categories.forEach(cat => {
+                const count = state.customModels.filter(m => (m.category || "Chung") === cat).length;
+                html += `
+                    <div class="cat-chip ${selectedCategoryFilter === cat ? 'active' : ''}" onclick="window.filterModelCategory('${escapeHTML(cat)}')">
+                        ${escapeHTML(cat)} (${count})
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.filterModelCategory = function(cat) {
+            selectedCategoryFilter = cat;
+            renderCategoryChips();
+            renderModalModelList();
+        };
+
+        function renderModalModelList() {
+            const container = document.getElementById('modalModelListContainer');
+            const searchVal = (document.getElementById('modelSearchInput')?.value || '').toLowerCase().trim();
+            if (!container) return;
+
+            let filteredModels = state.customModels.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(searchVal) || 
+                                      (m.appName || '').toLowerCase().includes(searchVal) ||
+                                      (m.category || '').toLowerCase().includes(searchVal);
+                const matchesCat = selectedCategoryFilter === 'ALL' || (m.category || 'Chung') === selectedCategoryFilter;
+                return matchesSearch && matchesCat;
+            });
+
+            if (filteredModels.length === 0) {
+                container.innerHTML = '<p class="text-secondary text-center py-4">Không tìm thấy Model phù hợp.</p>';
+                return;
+            }
+
+            const grouped = {};
+            filteredModels.forEach(m => {
+                const cat = m.category || "Chung";
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(m);
+            });
+
+            let html = '';
+            for (const [cat, models] of Object.entries(grouped)) {
+                html += `<div class="model-category-header"><i class="fa-solid fa-folder me-1"></i> ${escapeHTML(cat)}</div>`;
+                models.forEach(m => {
+                    const isSelected = m.id === state.currentModelId;
+                    const logoHtml = getBrandLogoHtml(m.appName, m.name, m.logoUrl);
+                    html += `
+                        <div class="model-item-btn ${isSelected ? 'active' : ''}" onclick="window.selectModelFromModal('${m.id}')">
+                            <div class="d-flex align-items-center gap-3">
+                                ${logoHtml}
+                                <div>
+                                    <div class="fw-bold text-light">${escapeHTML(m.name)}</div>
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span class="badge bg-secondary text-light" style="font-size:0.7rem;">${escapeHTML(m.appName || 'AI App')}</span>
+                                        <small class="text-secondary text-truncate" style="font-size:0.75rem; max-width: 170px;">${escapeHTML(m.subSystem || '')}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            ${isSelected ? '<i class="fa-solid fa-circle-check text-primary fs-5 ms-2"></i>' : '<i class="fa-regular fa-circle text-secondary fs-5 ms-2"></i>'}
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        document.getElementById('modelSearchInput')?.addEventListener('input', () => {
+            renderModalModelList();
+        });
+
+        window.selectModelFromModal = function(id) {
+            state.currentModelId = id;
+            saveStateToLocal();
+            updateHeaderModelBar();
+            renderChatMessages();
+            
+            const modalEl = document.getElementById('modelPickerModal');
+            const modalObj = bootstrap.Modal.getInstance(modalEl);
+            if (modalObj) modalObj.hide();
+
+            const chosen = state.customModels.find(m => m.id === id);
+            window.showToast(`Đã chọn model: ${chosen?.name || ''}`, 'info');
+        };
+
+        function renderChatMessages() {
+            const chatBody = document.getElementById('chatBody');
+            if (!chatBody) return;
+            chatBody.innerHTML = '';
+
+            const activeSess = chatSessions.find(s => s.id === activeSessionId);
+            const currentModel = state.customModels.find(m => m.id === state.currentModelId);
+
+            if (!state.currentModelId) {
+                chatBody.innerHTML = `
+                    <div class="text-center text-light my-auto py-5 opacity-100">
+                        <i class="fa-solid fa-ban fs-1 mb-3 text-warning"></i>
+                        <h5 class="text-warning fw-bold">Chưa chọn AI Model</h5>
+                        <p class="small text-secondary mb-3">Bạn chưa chọn Model nào. Hãy chọn một Model để có thể bắt đầu nhắn tin.</p>
+                        <button class="btn btn-primary btn-sm fw-bold px-3 py-2 rounded-pill" onclick="window.openModelPickerModal()">
+                            <i class="fa-solid fa-hand-pointer me-1"></i> Bấm Chọn Model Ngay
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!activeSess || activeSess.messages.length === 0) {
+                const logoHtml = getBrandLogoHtml(currentModel?.appName, currentModel?.name, currentModel?.logoUrl);
+                chatBody.innerHTML = `
+                    <div class="text-center text-light my-auto py-5">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div style="transform: scale(1.6);">${logoHtml}</div>
+                        </div>
+                        <h5 class="text-light fw-bold">${escapeHTML(currentModel?.name || 'ModelAsi AI')}</h5>
+                        <p class="small text-secondary">Ứng dụng: <b class="text-light">${escapeHTML(currentModel?.appName || 'AI')}</b> • Bắt đầu đặt câu hỏi ngay!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            activeSess.messages.forEach(msg => {
+                const isUser = msg.role === 'user';
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `chat-message ${isUser ? 'user' : 'ai'}`;
+                
+                msgWrapper.ondblclick = () => {
+                    copyToClipboard(msg.content);
+                    window.showToast("Đã sao chép nội dung tin nhắn!", "success");
+                };
+
+                const senderName = isUser ? 'Bạn' : (msg.modelName || 'ModelAsi AI');
+                let formattedContent = '';
+                
+                if (isUser) {
+                    formattedContent = escapeHTML(msg.content).replace(/\n/g, '<br>');
+                } else {
+                    formattedContent = parseMarkdownWithCollapsibleCode(msg.content);
+                }
+
+                msgWrapper.innerHTML = `
+                    <div class="msg-sender">
+                        <i class="fa-solid ${isUser ? 'fa-user text-info' : 'fa-robot text-primary'}"></i> ${escapeHTML(senderName)}
+                    </div>
+                    <div class="msg-bubble">${formattedContent}</div>
+                `;
+
+                chatBody.appendChild(msgWrapper);
+            });
+
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function parseMarkdownWithCollapsibleCode(text) {
+            try {
+                let html = marked.parse(text);
+                html = html.replace(/<pre><code(.*?)>([\s\S]*?)<\/code><\/pre>/g, (match, p1, p2) => {
+                    const langMatch = p1.match(/class="language-(.*?)"/);
+                    const lang = langMatch ? langMatch[1] : 'code';
+                    const rawText = p2.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                    const linesCount = rawText.trim().split('\n').length;
+
+                    return `
+                        <div class="code-block-container my-2">
+                            <div class="code-block-header">
+                                <span class="badge bg-dark text-info border border-secondary font-monospace" style="font-size:0.75rem;">
+                                    <i class="fa-solid fa-code me-1"></i>${lang.toUpperCase()} (${linesCount} dòng)
+                                </span>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-info py-0 px-2 fw-bold" style="font-size:0.75rem;" onclick="window.toggleCodeBlock(this)">
+                                        <i class="fa-solid fa-eye me-1"></i> Xem code
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-light py-0 px-2 fw-bold" style="font-size:0.75rem;" onclick="window.copyCodeBlock(this)">
+                                        <i class="fa-solid fa-copy me-1"></i> Sao chép
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="code-content-wrapper" style="display: none;">
+                                <pre><code${p1}>${p2}</code></pre>
+                            </div>
+                            <textarea style="display:none;">${escapeHTML(rawText)}</textarea>
+                        </div>
+                    `;
+                });
+                return html;
+            } catch(e) {
+                return escapeHTML(text);
+            }
+        }
+
+        window.toggleCodeBlock = function(btn) {
+            const wrapper = btn.closest('.code-block-container').querySelector('.code-content-wrapper');
+            if (wrapper.style.display === 'none') {
+                wrapper.style.display = 'block';
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash me-1"></i> Thu lại';
+            } else {
+                wrapper.style.display = 'none';
+                btn.innerHTML = '<i class="fa-solid fa-eye me-1"></i> Xem code';
+            }
+        };
+
+        window.copyCodeBlock = function(btn) {
+            const rawText = btn.closest('.code-block-container').querySelector('textarea').value;
+            copyToClipboard(rawText);
+            btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Đã chép!';
+            setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-copy me-1"></i> Sao chép', 2000);
+        };
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Lỗi sao chép:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        async function callGroqApi(messages, subSystemPrompt) {
+            const validKeys = state.apiKeys.map(k => k.trim()).filter(k => k.length > 0);
+            if (validKeys.length === 0) {
+                throw new Error("Chưa cài đặt API Key. Vui lòng gõ lệnh /admin-09045 để cài đặt API Key trong bảng quản trị.");
+            }
+
+            const currentModelObj = state.customModels.find(m => m.id === state.currentModelId);
+            const fullSystemPrompt = `${state.mainSystem}\n\n[MÔ TẢ MODEL AI HIỆN TẠI]:\nTên Model: ${currentModelObj?.name || 'ModelAsi'}\nApp Chạy: ${currentModelObj?.appName || 'Groq'}\nPhân loại: ${currentModelObj?.category || 'Chung'}\nĐặc điểm giả lập: ${subSystemPrompt}\n\nLưu ý: Hãy nhập vai chuẩn xác theo đúng mô tả đặc điểm của Model AI này! Phản hồi bằng chữ sắc nét, Markdown chuẩn xác.`;
+
+            const payloadMessages = [
+                { role: 'system', content: fullSystemPrompt },
+                ...messages
+            ];
+
+            let lastError = null;
+
+            for (let i = 0; i < validKeys.length; i++) {
+                const apiKey = validKeys[i];
+                try {
+                    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: state.groqEngine || "llama-3.3-70b-versatile",
+                            messages: payloadMessages,
+                            temperature: 0.7,
+                            max_tokens: 4096
+                        })
+                    });
+
+                    if (!res.ok) {
+                        const errBody = await res.json().catch(() => ({}));
+                        throw new Error(errBody.error?.message || `HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error("Cấu trúc phản hồi từ Groq API không hợp lệ");
+                    }
+                } catch (err) {
+                    console.warn(`[Chuyển Key Âm Thầm] Key #${i+1} gặp lỗi:`, err.message);
+                    lastError = err;
+                }
+            }
+
+            throw new Error(`Tất cả API Keys đều gặp lỗi. Lỗi cuối cùng: ${lastError?.message || 'Lỗi kết nối'}`);
+        }
+
+        async function handleSendMessage() {
+            if (!state.currentModelId) {
+                window.showToast("Chưa chọn Model AI! Vui lòng chọn một Model trước khi gửi tin nhắn.", "warning");
+                window.openModelPickerModal();
+                return;
+            }
+
+            const inputEl = document.getElementById('chatInput');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            if (text === '/admin-09045') {
+                inputEl.value = '';
+                window.openAdminModal();
+                return;
+            }
+
+            const activeSess = chatSessions.find(s => s.id === activeSessionId);
+            if (!activeSess) return;
+
+            const currentModel = state.customModels.find(m => m.id === state.currentModelId);
+            if (!currentModel) {
+                window.showToast("Model AI không hợp lệ! Vui lòng chọn lại.", "warning");
+                return;
+            }
+
+            activeSess.messages.push({
+                role: 'user',
+                content: text
+            });
+
+            inputEl.value = '';
+            saveChatSessions();
+            renderChatMessages();
+
+            const loadingMsg = {
+                role: 'assistant',
+                modelName: currentModel?.name || 'ModelAsi AI',
+                content: '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang suy nghĩ...'
+            };
+            activeSess.messages.push(loadingMsg);
+            renderChatMessages();
+
+            try {
+                const apiMessages = activeSess.messages.slice(0, -1).map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+
+                const responseText = await callGroqApi(apiMessages, currentModel?.subSystem || "");
+                
+                activeSess.messages[activeSess.messages.length - 1].content = responseText;
+                saveChatSessions();
+                renderChatMessages();
+            } catch (err) {
+                activeSess.messages[activeSess.messages.length - 1].content = `<span class="text-danger fw-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i> Lỗi: ${escapeHTML(err.message)}</span>`;
+                saveChatSessions();
+                renderChatMessages();
+            }
+        }
+
+        window.openAdminModal = function() {
+            renderAdminPanelUI();
+            const modal = new bootstrap.Modal(document.getElementById('adminModal'));
+            modal.show();
+        };
+
+        function renderAdminPanelUI() {
+            document.getElementById('adminGroqEngine').value = state.groqEngine || 'llama-3.3-70b-versatile';
+            renderAPIKeyInputs();
+            document.getElementById('adminMainSystem').value = state.mainSystem || '';
+            renderAdminModelList();
+            document.getElementById('dbSaveStatus').innerText = '';
+        }
+
+        function renderAPIKeyInputs() {
+            const container = document.getElementById('apiKeyListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            state.apiKeys.forEach((key, index) => {
+                const row = document.createElement('div');
+                row.className = 'd-flex gap-2 align-items-center';
+                row.innerHTML = `
+                    <span class="text-secondary fw-bold small" style="min-width: 55px;">Key ${index + 1}:</span>
+                    <input type="password" class="form-control form-control-sm api-key-input" value="${escapeHTML(key)}" placeholder="gsk_..." data-index="${index}">
+                    <button class="btn btn-sm btn-outline-secondary text-light p-1 px-2" onclick="window.toggleKeyVisibility(this)">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    ${state.apiKeys.length > 1 ? `<button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.removeApiKey(${index})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        window.toggleKeyVisibility = function(btn) {
+            const input = btn.parentElement.querySelector('input');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+        };
+
+        window.removeApiKey = function(index) {
+            state.apiKeys.splice(index, 1);
+            renderAPIKeyInputs();
+        };
+
+        document.getElementById('btnAddKey').onclick = () => {
+            if (state.apiKeys.length >= 20) {
+                window.showToast("Đã đạt giới hạn tối đa 20 API Keys!", "warning");
+                return;
+            }
+            state.apiKeys.push("");
+            renderAPIKeyInputs();
+        };
+
+        function renderAdminModelList() {
+            const container = document.getElementById('adminModelList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (state.customModels.length === 0) {
+                container.innerHTML = '<p class="text-secondary text-center py-3">Chưa có Model AI nào. Hãy tạo mới!</p>';
+                return;
+            }
+
+            state.customModels.forEach(m => {
+                const logoHtml = getBrandLogoHtml(m.appName, m.name, m.logoUrl);
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            ${logoHtml}
+                            <div>
+                                <h6 class="fw-bold text-light mb-0">${escapeHTML(m.name)}</h6>
+                                <div class="d-flex gap-1 mt-1">
+                                    <span class="badge bg-primary text-light">${escapeHTML(m.appName || 'App AI')}</span>
+                                    <span class="badge bg-dark border border-secondary text-info">${escapeHTML(m.category || 'Chung')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary p-1 px-2" onclick="window.editModel('${m.id}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+                            <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.deleteModel('${m.id}')"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+                    <div class="sub-system-text text-secondary small text-truncate-2" id="subtext_${m.id}">
+                        ${escapeHTML(m.subSystem || 'Không có mô tả đặc điểm.')}
+                    </div>
+                    ${(m.subSystem && m.subSystem.length > 80) ? `<button class="btn btn-link btn-sm p-0 text-info mt-1 fw-bold" style="font-size:0.75rem;" onclick="window.toggleExpandModelText('${m.id}', this)">Mở rộng</button>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.toggleExpandModelText = function(id, btn) {
+            const textEl = document.getElementById(`subtext_${id}`);
+            if (textEl.classList.contains('text-truncate-2')) {
+                textEl.classList.remove('text-truncate-2');
+                btn.innerText = "Rút gọn";
+            } else {
+                textEl.classList.add('text-truncate-2');
+                btn.innerText = "Mở rộng";
+            }
+        };
+
+        window.openCreateModelModal = function() {
+            document.getElementById('editModelId').value = '';
+            document.getElementById('editModelName').value = '';
+            document.getElementById('editModelAppName').value = '';
+            document.getElementById('editModelLogoUrl').value = '';
+            document.getElementById('editModelCategory').value = 'Chung';
+            document.getElementById('editModelSubSystem').value = '';
+            document.getElementById('modelEditTitle').innerText = 'Tạo AI Model Mới';
+
+            const modal = new bootstrap.Modal(document.getElementById('modelEditModal'));
+            modal.show();
+        };
+
+        window.editModel = function(id) {
+            const m = state.customModels.find(item => item.id === id);
+            if (!m) return;
+            document.getElementById('editModelId').value = m.id;
+            document.getElementById('editModelName').value = m.name;
+            document.getElementById('editModelAppName').value = m.appName || '';
+            document.getElementById('editModelLogoUrl').value = m.logoUrl || '';
+            document.getElementById('editModelCategory').value = m.category || 'Chung';
+            document.getElementById('editModelSubSystem').value = m.subSystem || '';
+            document.getElementById('modelEditTitle').innerText = 'Chỉnh Sửa AI Model';
+
+            const modal = new bootstrap.Modal(document.getElementById('modelEditModal'));
+            modal.show();
+        };
+
+        window.deleteModel = function(id) {
+            state.customModels = state.customModels.filter(m => m.id !== id);
+            if (state.currentModelId === id) {
+                state.currentModelId = null;
+                localStorage.removeItem('modelasi_selected_model_id');
+            }
+            renderAdminModelList();
+            updateHeaderModelBar();
+            renderChatMessages();
+            window.showToast("Đã xóa AI Model!", "info");
+        };
+
+        document.getElementById('btnSaveModelItem').onclick = () => {
+            const id = document.getElementById('editModelId').value;
+            const name = document.getElementById('editModelName').value.trim();
+            const appName = document.getElementById('editModelAppName').value.trim();
+            const logoUrl = document.getElementById('editModelLogoUrl').value.trim();
+            const category = document.getElementById('editModelCategory').value.trim() || 'Chung';
+            const subSystem = document.getElementById('editModelSubSystem').value.trim();
+
+            if (!name) {
+                window.showToast("Vui lòng nhập Tên Model AI!", "warning");
+                return;
+            }
+
+            if (id) {
+                const item = state.customModels.find(m => m.id === id);
+                if (item) {
+                    item.name = name;
+                    item.appName = appName;
+                    item.logoUrl = logoUrl;
+                    item.category = category;
+                    item.subSystem = subSystem;
+                }
+            } else {
+                const newId = 'mod_' + Date.now();
+                state.customModels.push({
+                    id: newId,
+                    name,
+                    appName,
+                    logoUrl,
+                    category,
+                    subSystem
+                });
+            }
+
+            renderAdminModelList();
+            updateHeaderModelBar();
+            renderChatMessages();
+            
+            const modalEl = document.getElementById('modelEditModal');
+            const modalObj = bootstrap.Modal.getInstance(modalEl);
+            if (modalObj) modalObj.hide();
+            window.showToast("Đã lưu thông tin AI Model!", "success");
+        };
+
+        document.getElementById('btnSaveToDB').onclick = () => {
+            const keyInputs = document.querySelectorAll('.api-key-input');
+            const newKeys = [];
+            keyInputs.forEach(inp => {
+                if (inp.value.trim()) newKeys.push(inp.value.trim());
+            });
+            state.apiKeys = newKeys.length > 0 ? newKeys : [""];
+            state.groqEngine = document.getElementById('adminGroqEngine').value.trim() || "llama-3.3-70b-versatile";
+            state.mainSystem = document.getElementById('adminMainSystem').value.trim();
+
+            saveStateToFirebase();
+        };
+
+        document.getElementById('sendBtn').onclick = handleSendMessage;
+
+        document.getElementById('chatInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        document.getElementById('btnNewChat').onclick = () => createNewSession();
+
+        window.onload = function() {
+            initData();
+        };
+    </script>
 </body>
 </html>
