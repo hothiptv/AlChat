@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ModelAsi System Admin v0.5.7</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        [data-theme="dark"] {
+            --bg-color: #0b0e14;
+            --panel-bg: #161b22;
+            --card-bg: #1f242d;
+            --border-color: #2e3440;
+            --accent-color: #2563eb;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --neon-blue: #00f2fe;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: pan-x pan-y;
+        }
+        .admin-box {
+            width: 90%;
+            max-width: 900px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-control, .form-select {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .login-screen {
+            text-align: center;
+            padding: 20px;
+        }
+        .data-section-header {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-blue);
+            padding: 8px 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .data-section-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px 0 6px 10px;
+        }
+        .data-section-body.collapsed {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-box" id="loginScreenBox">
+    <div class="login-screen">
+        <h4 class="fw-bold mb-3 text-info"><i class="bi bi-shield-lock-fill me-2"></i> ModelAsi Admin Portal</h4>
+        <p class="text-secondary small mb-4">Please enter the system administrator password to proceed.</p>
+        <label for="adminPasswordInput" class="form-label visually-hidden">Admin Password</label>
+        <input type="password" id="adminPasswordInput" class="form-control text-center mb-3" placeholder="Enter password...">
+        <button class="btn btn-primary w-100 fw-bold" id="adminLoginBtn">Login Management System</button>
+    </div>
+</div>
+
+<div class="admin-box d-none" id="adminDashboardBox">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+        <h5 class="m-0 fw-bold text-info"><i class="bi bi-gear-fill me-2"></i> MODELASI SYSTEM ADMIN (v0.5.7)</h5>
+        <button class="btn btn-sm btn-outline-danger" id="adminLogoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-keys" type="button"><i class="bi bi-key-fill me-1"></i> API & Global Tag</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-models" type="button"><i class="bi bi-cpu-fill me-1"></i> AI Models</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-category-logo" type="button"><i class="bi bi-tags-fill me-1"></i> Phân, Logo và Tên</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-data" type="button"><i class="bi bi-database-fill me-1"></i> Data</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-prompt" type="button"><i class="bi bi-file-earmark-text-fill me-1"></i> System Prompt</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent" style="flex:1; overflow-y:auto; padding-right: 4px;">
+        <!-- Tab 1: Keys (Up to 20 API Keys) -->
+        <div class="tab-pane fade show active" id="tab-keys" role="tabpanel">
+            <div class="mb-3">
+                <label for="globalModelTagInput" class="form-label fw-semibold text-info">Global Base Groq Model Tag:</label>
+                <input type="text" id="globalModelTagInput" class="form-control mb-3" placeholder="e.g. openai/gpt-oss-120b">
+                
+                <h6 class="fw-semibold text-info mb-2"><i class="bi bi-key me-1"></i> Groq API Keys (Lên tới 20 khoá, không bắt buộc)</h6>
+                <div id="apiKeysContainer" class="d-flex flex-column gap-2 mb-3">
+                    <!-- Dynamically generated 20 API Key inputs -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: AI Models -->
+        <div class="tab-pane fade" id="tab-models" role="tabpanel">
+            <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
+                <h6 class="fw-bold text-info mb-3" id="modelFormTitle"><i class="bi bi-plus-circle me-1"></i> Create / Update AI Model</h6>
+                <input type="hidden" id="editingModelId" value="">
+                
+                <div class="mb-2">
+                    <label for="presetNameSelect" class="form-label small fw-bold">Chọn Tên Mẫu Có Sẵn (Điền nhanh App & Developer, có thể chỉnh sửa tự do):</label>
+                    <select id="presetNameSelect" class="form-select form-select-sm">
+                        <option value="">-- Tự nhập thủ công / Không chọn mẫu --</option>
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label for="modelNameInput" class="form-label small fw-bold">Model Display Name:</label>
+                        <input type="text" id="modelNameInput" class="form-control form-control-sm" placeholder="e.g. GPT-4">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="modelAppInput" class="form-label small fw-bold">App Name (Ghi trên Phân):</label>
+                        <input type="text" id="modelAppInput" class="form-control form-control-sm" placeholder="e.g. ChatGPT">
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label for="modelDeveloperInput" class="form-label small fw-bold">Nhà phát triển (Developer):</label>
+                        <input type="text" id="modelDeveloperInput" class="form-control form-control-sm" placeholder="e.g. OpenAI">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="modelCategorySelect" class="form-label small fw-bold">Phân (Category):</label>
+                        <select id="modelCategorySelect" class="form-select form-select-sm"></select>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label for="modelLogoSelect" class="form-label small fw-bold">Logo:</label>
+                    <select id="modelLogoSelect" class="form-select form-select-sm"></select>
+                </div>
+
+                <div class="mb-3" id="modelSubSystemContainer">
+                    <label for="modelSubSystemInput" class="form-label small fw-bold">Model Sub-System Instructions:</label>
+                    <textarea id="modelSubSystemInput" class="form-control form-control-sm" rows="2" placeholder="Instructions..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success btn-sm flex-fill fw-bold" id="saveModelBtn">Save Model</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="cancelModelEditBtn">Cancel</button>
+                </div>
+            </div>
+            <div id="adminModelsList"></div>
+        </div>
+
+        <!-- Tab 3: Phân, Logo và Tên -->
+        <div class="tab-pane fade" id="tab-category-logo" role="tabpanel">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-folder-fill me-1"></i> Quản Lý Phân</h6>
+                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
+                        <input type="hidden" id="editingCategoryId" value="">
+                        <label for="categoryNameInput" class="form-label visually-hidden">Tên Phân</label>
+                        <input type="text" id="categoryNameInput" class="form-control form-control-sm mb-2" placeholder="Tên Phân (Ví dụ: ChatGPT)">
+                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="saveCategoryBtn">Tạo / Cập nhật Phân</button>
+                    </div>
+                    <div id="categoriesListContainer"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-bookmark-star-fill me-1"></i> Quản Lý Tên Mẫu</h6>
+                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
+                        <input type="hidden" id="editingPresetNameId" value="">
+                        <label for="presetTitleInput" class="form-label visually-hidden">Tên Mẫu Model</label>
+                        <input type="text" id="presetTitleInput" class="form-control form-control-sm mb-2" placeholder="Tên Model (vd: GPT-4o)">
+                        <label for="presetAppInput" class="form-label visually-hidden">Tên App Mẫu</label>
+                        <input type="text" id="presetAppInput" class="form-control form-control-sm mb-2" placeholder="Tên App (vd: ChatGPT)">
+                        <label for="presetDevInput" class="form-label visually-hidden">Nhà phát triển Mẫu</label>
+                        <input type="text" id="presetDevInput" class="form-control form-control-sm mb-2" placeholder="Nhà phát triển (vd: OpenAI)">
+                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="savePresetNameBtn">Tạo / Cập nhật Tên</button>
+                    </div>
+                    <div id="presetNamesListContainer"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-image-fill me-1"></i> Quản Lý Logo</h6>
+                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
+                        <input type="hidden" id="editingLogoId" value="">
+                        <label for="logoNameInput" class="form-label visually-hidden">Tên Logo</label>
+                        <input type="text" id="logoNameInput" class="form-control form-control-sm mb-2" placeholder="Tên Logo">
+                        <label for="logoLightInput" class="form-label visually-hidden">Link Sáng</label>
+                        <input type="text" id="logoLightInput" class="form-control form-control-sm mb-2" placeholder="Link Sáng (Light Theme URL)">
+                        <label for="logoDarkInput" class="form-label visually-hidden">Link Tối</label>
+                        <input type="text" id="logoDarkInput" class="form-control form-control-sm mb-2" placeholder="Link Tối (Dark Theme URL)">
+                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="saveLogoBtn">Tạo / Cập nhật Logo</button>
+                    </div>
+                    <div id="logosListContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Data Tab -->
+        <div class="tab-pane fade" id="tab-data" role="tabpanel">
+            <h6 class="fw-bold text-info mb-3"><i class="bi bi-database me-1"></i> Tổng Hợp Dữ Liệu Hệ Thống</h6>
+            
+            <div class="mb-3">
+                <div class="data-section-header" id="dataCategoriesHeader">
+                    <span><i class="bi bi-folder2-open me-2"></i> Phân Dữ Liệu (<span id="dataCatCount">0</span>)</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="data-section-body" id="dataCategoriesBody"></div>
+            </div>
+
+            <div class="mb-3">
+                <div class="data-section-header" id="dataPresetNamesHeader">
+                    <span><i class="bi bi-bookmark-star me-2"></i> Tên Mẫu Dữ Liệu (<span id="dataPresetCount">0</span>)</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="data-section-body" id="dataPresetNamesBody"></div>
+            </div>
+
+            <div class="mb-3">
+                <div class="data-section-header" id="dataLogosHeader">
+                    <span><i class="bi bi-image me-2"></i> Logo Dữ Liệu (<span id="dataLogoCount">0</span>)</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="data-section-body" id="dataLogosBody"></div>
+            </div>
+
+            <div class="mb-3">
+                <div class="data-section-header" id="dataModelsHeader">
+                    <span><i class="bi bi-cpu me-2"></i> Model AI Dữ Liệu (<span id="dataModelCount">0</span>)</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="data-section-body" id="dataModelsBody"></div>
+            </div>
+        </div>
+
+        <!-- Tab 5: System Prompt -->
+        <div class="tab-pane fade" id="tab-prompt" role="tabpanel">
+            <label for="systemPromptInput" class="form-label fw-semibold">Primary System Prompt:</label>
+            <textarea id="systemPromptInput" class="form-control" rows="8"></textarea>
+        </div>
+    </div>
+
+    <div class="mt-3 pt-2 border-top border-secondary">
+        <button class="btn btn-primary w-100 fw-bold" id="saveAllConfigBtn">Save All Configuration to Cloud</button>
+        <div id="saveStatusAlert" class="small text-center mt-2"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
+  authDomain: "dataan-d19b7.firebaseapp.com",
+  databaseURL: "https://dataan-d19b7-default-rtdb.firebaseio.com",
+  projectId: "dataan-d19b7",
+  storageBucket: "dataan-d19b7.firebasestorage.app",
+  messagingSenderId: "634110626824",
+  appId: "1:634110626824:web:903a5181db232369f495bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === '+' || e.key === '-' || e.key === '='))) {
+        e.preventDefault();
+        return false;
+    }
+});
+document.addEventListener('wheel', e => {
+    if (e.ctrlKey) e.preventDefault();
+}, { passive: false });
+
+let adminData = {
+    apiKeys: [],
+    globalModelTag: "openai/gpt-oss-120b",
+    models: [],
+    categories: [],
+    presetNames: [],
+    logos: [],
+    systemPrompt: "You are ModelAsi, an intelligent and helpful AI assistant."
+};
+
+const loginScreenBox = document.getElementById('loginScreenBox');
+const adminDashboardBox = document.getElementById('adminDashboardBox');
+const adminPasswordInput = document.getElementById('adminPasswordInput');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+// Build 20 API Key inputs dynamically
+const apiKeysContainer = document.getElementById('apiKeysContainer');
+for (let i = 1; i <= 20; i++) {
+    const div = document.createElement('div');
+    div.className = "mb-1";
+    div.innerHTML = `
+        <label for="apiKey${i}Input" class="form-label small fw-semibold text-secondary mb-1">Groq API Key ${i} (Không bắt buộc):</label>
+        <input type="password" id="apiKey${i}Input" class="form-control form-control-sm" placeholder="gsk_...">
+    `;
+    apiKeysContainer.appendChild(div);
+}
+
+const cachedPassword = localStorage.getItem("modelasi_admin_password");
+if (cachedPassword === "ans09045") {
+    adminPasswordInput.value = cachedPassword;
+    loginScreenBox.classList.add("d-none");
+    adminDashboardBox.classList.remove("d-none");
+    loadConfigFromCloud();
+}
+
+adminLoginBtn.addEventListener("click", async () => {
+    const pwd = adminPasswordInput.value.trim();
+    if (pwd === "ans09045") {
+        localStorage.setItem("modelasi_admin_password", pwd);
+        loginScreenBox.classList.add("d-none");
+        adminDashboardBox.classList.remove("d-none");
+        await loadConfigFromCloud();
+    } else {
+        alert("Incorrect password!");
+    }
+});
+
+adminLogoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("modelasi_admin_password");
+    adminDashboardBox.classList.add("d-none");
+    loginScreenBox.classList.add("d-none");
+    adminPasswordInput.value = "";
+});
+
+async function loadConfigFromCloud() {
+    try {
+        const docRef = doc(db, "modelasi_settings", "config");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            adminData.apiKeys = data.apiKeys || [];
+            adminData.globalModelTag = data.globalModelTag || "openai/gpt-oss-120b";
+            adminData.models = data.models || [];
+            adminData.categories = data.categories || [];
+            adminData.presetNames = data.presetNames || [];
+            adminData.logos = data.logos || [];
+            adminData.systemPrompt = data.systemPrompt || adminData.systemPrompt;
+        }
+        populateAdminUI();
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function populateAdminUI() {
+    document.getElementById('globalModelTagInput').value = adminData.globalModelTag;
+    for (let i = 1; i <= 20; i++) {
+        const inputEl = document.getElementById(`apiKey${i}Input`);
+        if (inputEl) {
+            inputEl.value = adminData.apiKeys[i - 1] || "";
+        }
+    }
+    document.getElementById('systemPromptInput').value = adminData.systemPrompt;
+
+    renderCategoriesUI();
+    renderPresetNamesUI();
+    renderLogosUI();
+    renderModelsUI();
+    renderDataTab();
+    updateModelDropdowns();
+}
+
+function updateModelDropdowns() {
+    const catSelect = document.getElementById('modelCategorySelect');
+    const logoSelect = document.getElementById('modelLogoSelect');
+    const presetSelect = document.getElementById('presetNameSelect');
+    
+    catSelect.innerHTML = `<option value="">-- Chọn Phân --</option>`;
+    adminData.categories.forEach(c => {
+        catSelect.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+    });
+
+    logoSelect.innerHTML = `<option value="">-- Chọn Logo --</option>`;
+    adminData.logos.forEach(l => {
+        logoSelect.innerHTML += `<option value="${l.id}">${escapeHtml(l.name)}</option>`;
+    });
+
+    presetSelect.innerHTML = `<option value="">-- Tự nhập thủ công / Không chọn mẫu --</option>`;
+    adminData.presetNames.forEach(p => {
+        presetSelect.innerHTML += `<option value="${p.id}">${escapeHtml(p.title)} (App: ${escapeHtml(p.app)}, Dev: ${escapeHtml(p.developer)})</option>`;
+    });
+}
+
+// Preset Name Management
+document.getElementById('savePresetNameBtn').addEventListener("click", () => {
+    const title = document.getElementById('presetTitleInput').value.trim();
+    const app = document.getElementById('presetAppInput').value.trim();
+    const developer = document.getElementById('presetDevInput').value.trim();
+    const editId = document.getElementById('editingPresetNameId').value;
+    if (!title) return alert("Nhập tên model mẫu!");
+
+    if (editId) {
+        const p = adminData.presetNames.find(item => item.id === editId);
+        if (p) { p.title = title; p.app = app; p.developer = developer; }
+        document.getElementById('editingPresetNameId').value = "";
+    } else {
+        adminData.presetNames.push({ id: "preset_" + Date.now(), title, app, developer });
+    }
+    document.getElementById('presetTitleInput').value = "";
+    document.getElementById('presetAppInput').value = "";
+    document.getElementById('presetDevInput').value = "";
+    renderPresetNamesUI();
+    renderDataTab();
+    updateModelDropdowns();
+});
+
+function renderPresetNamesUI() {
+    const container = document.getElementById('presetNamesListContainer');
+    container.innerHTML = "";
+    adminData.presetNames.forEach(p => {
+        container.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <div>
+                    <span class="fw-bold">${escapeHtml(p.title)}</span>
+                    <div class="small text-secondary" style="font-size:10px;">App: ${escapeHtml(p.app)} | Dev: ${escapeHtml(p.developer)}</div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editPresetName('${p.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+window.editPresetName = function(id) {
+    const p = adminData.presetNames.find(item => item.id === id);
+    if(p) {
+        document.getElementById('editingPresetNameId').value = p.id;
+        document.getElementById('presetTitleInput').value = p.title;
+        document.getElementById('presetAppInput').value = p.app || "";
+        document.getElementById('presetDevInput').value = p.developer || "";
+    }
+};
+
+window.delPresetName = function(id) {
+    adminData.presetNames = adminData.presetNames.filter(p => p.id !== id);
+    renderPresetNamesUI();
+    renderDataTab();
+    updateModelDropdowns();
+};
+
+// Preset dropdown selection logic in Model tab (Autofills fields without overwriting Model Display Name unless intended)
+document.getElementById('presetNameSelect').addEventListener("change", (e) => {
+    const selectedId = e.target.value;
+    const nameInput = document.getElementById('modelNameInput');
+    const appInput = document.getElementById('modelAppInput');
+    const devInput = document.getElementById('modelDeveloperInput');
+
+    if (selectedId) {
+        const found = adminData.presetNames.find(p => p.id === selectedId);
+        if (found) {
+            nameInput.value = found.title;
+            appInput.value = found.app || "";
+            devInput.value = found.developer || "";
+        }
+    }
+});
+
+// Categories Management
+document.getElementById('saveCategoryBtn').addEventListener("click", () => {
+    const name = document.getElementById('categoryNameInput').value.trim();
+    const editId = document.getElementById('editingCategoryId').value;
+    if (!name) return alert("Nhập tên phân!");
+
+    if (editId) {
+        const c = adminData.categories.find(item => item.id === editId);
+        if (c) c.name = name;
+        document.getElementById('editingCategoryId').value = "";
+    } else {
+        adminData.categories.push({ id: "cat_" + Date.now(), name });
+    }
+    document.getElementById('categoryNameInput').value = "";
+    renderCategoriesUI();
+    renderDataTab();
+    updateModelDropdowns();
+});
+
+function renderCategoriesUI() {
+    const container = document.getElementById('categoriesListContainer');
+    container.innerHTML = "";
+    adminData.categories.forEach(c => {
+        container.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <span>${escapeHtml(c.name)}</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editCat('${c.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+window.editCat = function(id) {
+    const c = adminData.categories.find(item => item.id === id);
+    if(c) {
+        document.getElementById('editingCategoryId').value = c.id;
+        document.getElementById('categoryNameInput').value = c.name;
+    }
+};
+
+window.delCat = function(id) {
+    adminData.categories = adminData.categories.filter(c => c.id !== id);
+    renderCategoriesUI();
+    renderDataTab();
+    updateModelDropdowns();
+};
+
+// Logos Management
+document.getElementById('saveLogoBtn').addEventListener("click", () => {
+    const name = document.getElementById('logoNameInput').value.trim();
+    const light = document.getElementById('logoLightInput').value.trim();
+    const dark = document.getElementById('logoDarkInput').value.trim();
+    const editId = document.getElementById('editingLogoId').value;
+    if (!name) return alert("Nhập tên logo!");
+
+    if (editId) {
+        const l = adminData.logos.find(item => item.id === editId);
+        if (l) { l.name = name; l.light = light; l.dark = dark; }
+        document.getElementById('editingLogoId').value = "";
+    } else {
+        adminData.logos.push({ id: "logo_" + Date.now(), name, light, dark });
+    }
+    document.getElementById('logoNameInput').value = "";
+    document.getElementById('logoLightInput').value = "";
+    document.getElementById('logoDarkInput').value = "";
+    renderLogosUI();
+    renderDataTab();
+    updateModelDropdowns();
+});
+
+function renderLogosUI() {
+    const container = document.getElementById('logosListContainer');
+    container.innerHTML = "";
+    adminData.logos.forEach(l => {
+        container.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <div>
+                    <span class="fw-bold">${escapeHtml(l.name)}</span>
+                    <div class="small text-secondary" style="font-size:10px;">Light: ${escapeHtml(l.light || 'None')} | Dark: ${escapeHtml(l.dark || 'None')}</div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editLogo('${l.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+window.editLogo = function(id) {
+    const l = adminData.logos.find(item => item.id === id);
+    if(l) {
+        document.getElementById('editingLogoId').value = l.id;
+        document.getElementById('logoNameInput').value = l.name;
+        document.getElementById('logoLightInput').value = l.light || "";
+        document.getElementById('logoDarkInput').value = l.dark || "";
+    }
+};
+
+window.delLogo = function(id) {
+    adminData.logos = adminData.logos.filter(l => l.id !== id);
+    renderLogosUI();
+    renderDataTab();
+    updateModelDropdowns();
+};
+
+// Models Management
+document.getElementById('saveModelBtn').addEventListener("click", () => {
+    const name = document.getElementById('modelNameInput').value.trim();
+    const app = document.getElementById('modelAppInput').value.trim();
+    const developer = document.getElementById('modelDeveloperInput').value.trim();
+    const categoryId = document.getElementById('modelCategorySelect').value;
+    const logoId = document.getElementById('modelLogoSelect').value;
+    const subSystem = document.getElementById('modelSubSystemInput').value.trim();
+    const editId = document.getElementById('editingModelId').value;
+
+    if (!name) return alert("Nhập tên Model!");
+
+    if (editId) {
+        const m = adminData.models.find(item => item.id === editId);
+        if (m) { Object.assign(m, { name, app, developer, categoryId, logoId, subSystem }); }
+        document.getElementById('editingModelId').value = "";
+    } else {
+        adminData.models.push({ id: "model_" + Date.now(), name, app, developer, categoryId, logoId, subSystem });
+    }
+
+    document.getElementById('modelNameInput').value = "";
+    document.getElementById('modelAppInput').value = "";
+    document.getElementById('modelDeveloperInput').value = "";
+    document.getElementById('modelSubSystemInput').value = "";
+    document.getElementById('presetNameSelect').value = "";
+    renderModelsUI();
+    renderDataTab();
+});
+
+function renderModelsUI() {
+    const container = document.getElementById('adminModelsList');
+    container.innerHTML = "";
+    adminData.models.forEach(m => {
+        const catObj = adminData.categories.find(c => c.id === m.categoryId);
+        container.innerHTML += `
+            <div class="p-2 mb-2 rounded border border-secondary" style="background:var(--card-bg)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold text-info">${escapeHtml(m.name)}</span>
+                        <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+window.editModel = function(id) {
+    const m = adminData.models.find(item => item.id === id);
+    if(m) {
+        document.getElementById('editingModelId').value = m.id;
+        document.getElementById('modelNameInput').value = m.name;
+        document.getElementById('modelAppInput').value = m.app || "";
+        document.getElementById('modelDeveloperInput').value = m.developer || "";
+        document.getElementById('modelCategorySelect').value = m.categoryId || "";
+        document.getElementById('modelLogoSelect').value = m.logoId || "";
+        document.getElementById('modelSubSystemInput').value = m.subSystem || "";
+        document.getElementById('presetNameSelect').value = "";
+        
+        const tabEl = document.querySelector('button[data-bs-target="#tab-models"]');
+        if (tabEl) new bootstrap.Tab(tabEl).show();
+    }
+};
+
+window.delModel = function(id) {
+    adminData.models = adminData.models.filter(m => m.id !== id);
+    renderModelsUI();
+    renderDataTab();
+};
+
+// Data Tab rendering and sections
+function renderDataTab() {
+    document.getElementById('dataCatCount').innerText = adminData.categories.length;
+    document.getElementById('dataPresetCount').innerText = adminData.presetNames.length;
+    document.getElementById('dataLogoCount').innerText = adminData.logos.length;
+    document.getElementById('dataModelCount').innerText = adminData.models.length;
+
+    // Categories Data
+    const catBody = document.getElementById('dataCategoriesBody');
+    catBody.innerHTML = "";
+    adminData.categories.forEach(c => {
+        catBody.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <span>${escapeHtml(c.name)}</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editCat('${c.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+
+    // Preset Names Data
+    const presetBody = document.getElementById('dataPresetNamesBody');
+    presetBody.innerHTML = "";
+    adminData.presetNames.forEach(p => {
+        presetBody.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <div>
+                    <span class="fw-bold">${escapeHtml(p.title)}</span>
+                    <div class="small text-secondary" style="font-size:10px;">App: ${escapeHtml(p.app)} | Dev: ${escapeHtml(p.developer)}</div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editPresetName('${p.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+
+    // Logos Data
+    const logoBody = document.getElementById('dataLogosBody');
+    logoBody.innerHTML = "";
+    adminData.logos.forEach(l => {
+        logoBody.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
+                <div>
+                    <span class="fw-bold">${escapeHtml(l.name)}</span>
+                    <div class="small text-secondary" style="font-size:10px;">Light: ${escapeHtml(l.light || 'None')} | Dark: ${escapeHtml(l.dark || 'None')}</div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editLogo('${l.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+
+    // Models Data
+    const modelBody = document.getElementById('dataModelsBody');
+    modelBody.innerHTML = "";
+    adminData.models.forEach(m => {
+        const catObj = adminData.categories.find(c => c.id === m.categoryId);
+        modelBody.innerHTML += `
+            <div class="p-2 mb-2 rounded border border-secondary" style="background:var(--card-bg)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold text-info">${escapeHtml(m.name)}</span>
+                        <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+document.getElementById('dataCategoriesHeader').addEventListener('click', () => {
+    document.getElementById('dataCategoriesBody').classList.toggle('collapsed');
+});
+document.getElementById('dataPresetNamesHeader').addEventListener('click', () => {
+    document.getElementById('dataPresetNamesBody').classList.toggle('collapsed');
+});
+document.getElementById('dataLogosHeader').addEventListener('click', () => {
+    document.getElementById('dataLogosBody').classList.toggle('collapsed');
+});
+document.getElementById('dataModelsHeader').addEventListener('click', () => {
+    document.getElementById('dataModelsBody').classList.toggle('collapsed');
+});
+
+document.getElementById('saveAllConfigBtn').addEventListener("click", async () => {
+    let collectedKeys = [];
+    for (let i = 1; i <= 20; i++) {
+        const val = document.getElementById(`apiKey${i}Input`).value.trim();
+        if (val.length > 0) {
+            collectedKeys.push(val);
+        }
+    }
+    adminData.apiKeys = collectedKeys;
+    adminData.globalModelTag = document.getElementById('globalModelTagInput').value.trim() || "openai/gpt-oss-120b";
+    adminData.systemPrompt = document.getElementById('systemPromptInput').value.trim();
+
+    const statusAlert = document.getElementById('saveStatusAlert');
+    statusAlert.innerText = "Saving to Firebase Cloud...";
+    statusAlert.className = "small text-center mt-2 text-warning";
+
+    try {
+        const docRef = doc(db, "modelasi_settings", "config");
+        await setDoc(docRef, { ...adminData, updatedAt: new Date().toISOString() }, { merge: true });
+        statusAlert.innerText = "✓ Configuration saved successfully!";
+        statusAlert.className = "small text-center mt-2 text-success";
+    } catch(e) {
+        statusAlert.innerText = "Error saving configuration!";
+        statusAlert.className = "small text-center mt-2 text-danger";
+    }
+});
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+</script>
+</body>
+</html>
