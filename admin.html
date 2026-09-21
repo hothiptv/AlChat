@@ -1,274 +1,609 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="vi" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ModelAsi System Admin v0.5.7</title>
+    <title>ModelAsi System Admin v0.5.8</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        [data-theme="dark"] {
-            --bg-color: #0b0e14;
-            --panel-bg: #161b22;
-            --card-bg: #1f242d;
-            --border-color: #2e3440;
+        :root, [data-theme="dark"] {
+            --bg-color: #080b11;
+            --panel-bg: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
             --accent-color: #2563eb;
-            --text-main: #e2e8f0;
+            --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --neon-blue: #00f2fe;
+            --neon-blue: #38bdf8;
+            --input-bg: #0f172a;
+            --header-bg: #0f172a;
+            --hover-bg: #334155;
         }
-        body {
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100dvh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: system-ui, -apple-system, sans-serif;
-            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* App Fullscreen Container */
+        .app-viewport {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* Top Header Area */
+        .app-header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .app-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--neon-blue);
             margin: 0;
             display: flex;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            touch-action: pan-x pan-y;
+            gap: 8px;
+            white-space: nowrap;
         }
-        .admin-box {
-            width: 90%;
-            max-width: 900px;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            max-height: 90vh;
+
+        /* Nav Tabs Bar (Scrollable horizontally on mobile) */
+        .nav-tabs-wrapper {
+            background-color: #0b1120;
+            border-bottom: 1px solid var(--border-color);
+            padding: 6px 16px 0 16px;
+            flex-shrink: 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .nav-tabs-wrapper::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+            flex-wrap: nowrap !important;
+            gap: 6px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-sub) !important;
+            border: 1px solid transparent;
+            font-weight: 600;
+            font-size: 0.88rem;
+            padding: 8px 14px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--text-main) !important;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--neon-blue) !important;
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) var(--border-color) transparent !important;
+            box-shadow: inset 0 2px 0 var(--neon-blue);
+        }
+
+        /* Main Content Viewport */
+        .app-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
+
+        .tab-content {
+            flex: 1;
+        }
+
+        /* Form & Inputs */
+        .form-label {
+            color: var(--text-main) !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
         .form-control, .form-select {
-            background-color: var(--card-bg) !important;
+            background-color: var(--input-bg) !important;
             border-color: var(--border-color) !important;
             color: var(--text-main) !important;
         }
-        .login-screen {
-            text-align: center;
+
+        .form-control::placeholder {
+            color: #64748b !important;
+            opacity: 0.8;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--neon-blue) !important;
+            box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.2) !important;
+        }
+
+        /* Fullscreen Login Screen */
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
             padding: 20px;
         }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Cards & Section Lists */
+        .data-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.15s ease;
+        }
+
+        .data-card:hover {
+            border-color: #475569;
+        }
+
+        /* CRITICAL FIX FOR TEXT OVERFLOW */
+        .text-content-wrapper {
+            min-width: 0; /* Allows text clipping inside flex containers */
+            flex: 1;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .action-buttons {
+            flex-shrink: 0; /* Prevents action buttons from shrinking or being squeezed */
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .data-section-header {
-            background: rgba(0, 242, 254, 0.1);
+            background: rgba(56, 189, 248, 0.1);
             color: var(--neon-blue);
-            padding: 8px 12px;
+            padding: 12px 16px;
             font-weight: 700;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             margin-top: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            transition: background 0.2s ease;
         }
+
+        .data-section-header:hover {
+            background: rgba(56, 189, 248, 0.18);
+        }
+
         .data-section-body {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            padding: 6px 0 6px 10px;
+            gap: 8px;
+            padding: 10px 0 10px 0;
         }
+
         .data-section-body.collapsed {
             display: none;
+        }
+
+        /* Sticky Bottom Action Bar */
+        .app-footer {
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 12px 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Raw preview modal style */
+        .modal-content {
+            background-color: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+        }
+
+        .test-raw-preview {
+            background-color: #090d16;
+            color: #38bdf8;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 13px;
+            max-height: 320px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Toast Alert Floating */
+        .toast-container-custom {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
         }
     </style>
 </head>
 <body>
 
-<div class="admin-box" id="loginScreenBox">
-    <div class="login-screen">
-        <h4 class="fw-bold mb-3 text-info"><i class="bi bi-shield-lock-fill me-2"></i> ModelAsi Admin Portal</h4>
-        <p class="text-secondary small mb-4">Please enter the system administrator password to proceed.</p>
-        <label for="adminPasswordInput" class="form-label visually-hidden">Admin Password</label>
-        <input type="password" id="adminPasswordInput" class="form-control text-center mb-3" placeholder="Enter password...">
-        <button class="btn btn-primary w-100 fw-bold" id="adminLoginBtn">Login Management System</button>
+<div class="app-viewport">
+
+    <!-- LOGIN SCREEN VIEWPORT -->
+    <div class="login-wrapper" id="loginScreenBox">
+        <div class="login-card text-center">
+            <div class="mb-3">
+                <i class="bi bi-shield-lock-fill text-info display-4"></i>
+            </div>
+            <h4 class="fw-bold mb-2 text-info">ModelAsi Admin Portal</h4>
+            <p class="text-secondary small mb-4">Vui lòng nhập mật khẩu quản trị viên hệ thống để truy cập.</p>
+            
+            <div class="text-start mb-3">
+                <label for="adminPasswordInput" class="form-label">Mật khẩu Admin:</label>
+                <input type="password" id="adminPasswordInput" class="form-control text-center" placeholder="Nhập mật khẩu...">
+            </div>
+            <div id="loginFeedback" class="small text-danger mb-3 d-none">Mật khẩu không chính xác!</div>
+            <button class="btn btn-primary w-100 fw-bold py-2" id="adminLoginBtn"><i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập hệ thống</button>
+        </div>
     </div>
+
+    <!-- DASHBOARD VIEWPORT (FULLSCREEN) -->
+    <div class="d-none flex-column h-100 w-100" id="adminDashboardBox">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">
+                <i class="bi bi-cpu-fill text-info"></i> MODELASI SYSTEM ADMIN <span class="badge bg-secondary fs-6 ms-1">v0.5.8</span>
+            </h1>
+            <button class="btn btn-sm btn-outline-danger fw-bold" id="adminLogoutBtn">
+                <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
+            </button>
+        </header>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="nav-tabs-wrapper">
+            <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-keys" type="button">
+                        <i class="bi bi-key-fill text-warning"></i> API & Global Tag
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-models" type="button">
+                        <i class="bi bi-cpu-fill text-info"></i> AI Models
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-category-logo" type="button">
+                        <i class="bi bi-tags-fill text-success"></i> Phân, Logo & Tên
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-data" type="button">
+                        <i class="bi bi-database-fill text-primary"></i> Data Tổng Hợp
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-prompt" type="button">
+                        <i class="bi bi-file-earmark-text-fill text-danger"></i> System Prompt
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Body Workspace -->
+        <main class="app-body">
+            <div class="tab-content" id="adminTabsContent">
+                
+                <!-- TAB 1: KEYS & GLOBAL MODEL TAG -->
+                <div class="tab-pane fade show active" id="tab-keys" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12 col-lg-8 offset-lg-2">
+                            <div class="p-3 p-md-4 rounded border border-secondary mb-4" style="background-color: var(--panel-bg);">
+                                <h5 class="fw-bold text-info mb-3"><i class="bi bi-globe me-2"></i>Global Model Tag</h5>
+                                <div class="mb-4">
+                                    <label for="globalModelTagInput" class="form-label">Base Groq Model Tag:</label>
+                                    <input type="text" id="globalModelTagInput" class="form-control" placeholder="e.g. openai/gpt-oss-120b">
+                                </div>
+
+                                <hr class="border-secondary my-4">
+
+                                <h5 class="fw-bold text-info mb-3"><i class="bi bi-key-fill me-2"></i>Groq API Keys List (Tối đa 20 khóa)</h5>
+                                <div id="apiKeysContainer" class="row g-2 mb-2">
+                                    <!-- Dynamic API Key inputs -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: AI MODELS -->
+                <div class="tab-pane fade" id="tab-models" role="tabpanel">
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-5">
+                            <div class="p-3 p-md-4 rounded border border-secondary" style="background-color: var(--panel-bg);">
+                                <h6 class="fw-bold text-info mb-3 fs-5" id="modelFormTitle"><i class="bi bi-plus-circle me-2"></i>Tạo / Cập nhật AI Model</h6>
+                                <input type="hidden" id="editingModelId" value="">
+                                
+                                <div class="mb-3">
+                                    <label for="presetNameSelect" class="form-label">Chọn Tên Mẫu Có Sẵn (Điền nhanh):</label>
+                                    <select id="presetNameSelect" class="form-select form-select-sm">
+                                        <option value="">-- Tự nhập thủ công / Không chọn mẫu --</option>
+                                    </select>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 col-md-6">
+                                        <label for="modelNameInput" class="form-label">Model Display Name:</label>
+                                        <input type="text" id="modelNameInput" class="form-control form-control-sm" placeholder="e.g. GPT-4o">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="modelAppInput" class="form-label">App Name (Ghi trên Phân):</label>
+                                        <input type="text" id="modelAppInput" class="form-control form-control-sm" placeholder="e.g. ChatGPT">
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 col-md-6">
+                                        <label for="modelDeveloperInput" class="form-label">Nhà phát triển (Developer):</label>
+                                        <input type="text" id="modelDeveloperInput" class="form-control form-control-sm" placeholder="e.g. OpenAI">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="modelCategorySelect" class="form-label">Phân (Category):</label>
+                                        <select id="modelCategorySelect" class="form-select form-select-sm"></select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="modelLogoSelect" class="form-label">Logo Liên Kết:</label>
+                                    <select id="modelLogoSelect" class="form-select form-select-sm"></select>
+                                </div>
+
+                                <div class="mb-3" id="modelSubSystemContainer">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="modelSubSystemInput" class="form-label m-0">Model Sub-System Instructions:</label>
+                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 fw-bold" id="testModelSubSystemBtn">
+                                            <i class="bi bi-terminal me-1"></i> Test Fetch URL
+                                        </button>
+                                    </div>
+                                    <textarea id="modelSubSystemInput" class="form-control form-control-sm" rows="3" placeholder='Nhập instruction hoặc system = "https://raw.githubusercontent.com/... "'></textarea>
+                                    <div class="form-text text-secondary mt-1" style="font-size: 11px;">
+                                        Mẹo: Nhập <code>system = "linkrawgithub"</code> rồi nhấn <strong>Test Fetch URL</strong> để kiểm tra nội dung.
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2" id="saveModelBtn"><i class="bi bi-check-lg me-1"></i> Lưu Model</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-none py-2" id="cancelModelEditBtn">Hủy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-xl-7">
+                            <h6 class="fw-bold text-info mb-3 fs-5"><i class="bi bi-list-stars me-2"></i>Danh Sách AI Models Hiện Có</h6>
+                            <div id="adminModelsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: PHÂN, LOGO VÀ TÊN MẪU -->
+                <div class="tab-pane fade" id="tab-category-logo" role="tabpanel">
+                    <div class="row g-4">
+                        <!-- Cột 1: Phân -->
+                        <div class="col-12 col-lg-4">
+                            <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--panel-bg);">
+                                <h6 class="fw-bold text-info mb-3 fs-6"><i class="bi bi-folder-fill me-2"></i>Quản Lý Phân (Category)</h6>
+                                <input type="hidden" id="editingCategoryId" value="">
+                                <div class="mb-2">
+                                    <label for="categoryNameInput" class="form-label">Tên Phân:</label>
+                                    <input type="text" id="categoryNameInput" class="form-control form-control-sm" placeholder="Ví dụ: ChatGPT">
+                                </div>
+                                <button class="btn btn-primary btn-sm w-100 fw-bold py-2" id="saveCategoryBtn"><i class="bi bi-plus-circle me-1"></i> Tạo / Cập nhật Phân</button>
+                            </div>
+                            <div id="categoriesListContainer"></div>
+                        </div>
+
+                        <!-- Cột 2: Tên Mẫu -->
+                        <div class="col-12 col-lg-4">
+                            <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--panel-bg);">
+                                <h6 class="fw-bold text-info mb-3 fs-6"><i class="bi bi-bookmark-star-fill me-2"></i>Quản Lý Tên Mẫu Model</h6>
+                                <input type="hidden" id="editingPresetNameId" value="">
+                                <div class="mb-2">
+                                    <label for="presetTitleInput" class="form-label">Tên Model Mẫu:</label>
+                                    <input type="text" id="presetTitleInput" class="form-control form-control-sm" placeholder="vd: GPT-4o">
+                                </div>
+                                <div class="mb-2">
+                                    <label for="presetAppInput" class="form-label">Tên App Mẫu:</label>
+                                    <input type="text" id="presetAppInput" class="form-control form-control-sm" placeholder="vd: ChatGPT">
+                                </div>
+                                <div class="mb-2">
+                                    <label for="presetDevInput" class="form-label">Nhà phát triển Mẫu:</label>
+                                    <input type="text" id="presetDevInput" class="form-control form-control-sm" placeholder="vd: OpenAI">
+                                </div>
+                                <button class="btn btn-primary btn-sm w-100 fw-bold py-2" id="savePresetNameBtn"><i class="bi bi-plus-circle me-1"></i> Tạo / Cập nhật Tên</button>
+                            </div>
+                            <div id="presetNamesListContainer"></div>
+                        </div>
+
+                        <!-- Cột 3: Logo -->
+                        <div class="col-12 col-lg-4">
+                            <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--panel-bg);">
+                                <h6 class="fw-bold text-info mb-3 fs-6"><i class="bi bi-image-fill me-2"></i>Quản Lý Logo</h6>
+                                <input type="hidden" id="editingLogoId" value="">
+                                <div class="mb-2">
+                                    <label for="logoNameInput" class="form-label">Tên Logo:</label>
+                                    <input type="text" id="logoNameInput" class="form-control form-control-sm" placeholder="Tên nhận diện Logo">
+                                </div>
+                                <div class="mb-2">
+                                    <label for="logoLightInput" class="form-label">Link Light Theme URL:</label>
+                                    <input type="text" id="logoLightInput" class="form-control form-control-sm" placeholder="https://...">
+                                </div>
+                                <div class="mb-2">
+                                    <label for="logoDarkInput" class="form-label">Link Dark Theme URL:</label>
+                                    <input type="text" id="logoDarkInput" class="form-control form-control-sm" placeholder="https://...">
+                                </div>
+                                <button class="btn btn-primary btn-sm w-100 fw-bold py-2" id="saveLogoBtn"><i class="bi bi-plus-circle me-1"></i> Tạo / Cập nhật Logo</button>
+                            </div>
+                            <div id="logosListContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: DATA TAB -->
+                <div class="tab-pane fade" id="tab-data" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12 col-xl-10 offset-xl-1">
+                            <h5 class="fw-bold text-info mb-3"><i class="bi bi-database me-2"></i>Tổng Hợp Dữ Liệu Hệ Thống</h5>
+                            
+                            <div class="mb-3">
+                                <div class="data-section-header" id="dataCategoriesHeader">
+                                    <span><i class="bi bi-folder2-open me-2"></i> Phân Dữ Liệu (<span id="dataCatCount">0</span>)</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="data-section-body" id="dataCategoriesBody"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="data-section-header" id="dataPresetNamesHeader">
+                                    <span><i class="bi bi-bookmark-star me-2"></i> Tên Mẫu Dữ Liệu (<span id="dataPresetCount">0</span>)</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="data-section-body" id="dataPresetNamesBody"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="data-section-header" id="dataLogosHeader">
+                                    <span><i class="bi bi-image me-2"></i> Logo Dữ Liệu (<span id="dataLogoCount">0</span>)</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="data-section-body" id="dataLogosBody"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="data-section-header" id="dataModelsHeader">
+                                    <span><i class="bi bi-cpu me-2"></i> Model AI Dữ Liệu (<span id="dataModelCount">0</span>)</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="data-section-body" id="dataModelsBody"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: SYSTEM PROMPT -->
+                <div class="tab-pane fade" id="tab-prompt" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12 col-lg-10 offset-lg-1">
+                            <div class="p-3 p-md-4 rounded border border-secondary" style="background-color: var(--panel-bg);">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label for="systemPromptInput" class="form-label text-info fs-5 m-0"><i class="bi bi-file-earmark-code me-2"></i>Primary System Prompt:</label>
+                                    <button type="button" class="btn btn-sm btn-outline-info fw-bold py-1 px-3" id="testPrimaryPromptBtn">
+                                        <i class="bi bi-terminal me-1"></i> Test Fetch URL
+                                    </button>
+                                </div>
+                                <textarea id="systemPromptInput" class="form-control mb-3 font-monospace" rows="12" placeholder='Nhập System Prompt hoặc cú pháp system = "https://raw.githubusercontent.com/... "'></textarea>
+                                <div class="form-text text-secondary">
+                                    <i class="bi bi-info-circle me-1"></i> Cú pháp hỗ trợ: Bạn có thể nhập nội dung trực tiếp hoặc nhập dạng <code>system = "https://raw.githubusercontent.com/user/repo/main/prompt.txt"</code> để lấy nội dung động từ GitHub Raw.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Fixed Bottom Footer Save Button Bar -->
+        <footer class="app-footer">
+            <button class="btn btn-primary btn-lg fw-bold px-5 py-2 shadow" id="saveAllConfigBtn">
+                <i class="bi bi-cloud-arrow-up-fill me-2"></i> Save All Configuration to Cloud
+            </button>
+            <div id="saveStatusAlert" class="small text-center mt-2" style="min-height: 20px;"></div>
+        </footer>
+    </div>
+
 </div>
 
-<div class="admin-box d-none" id="adminDashboardBox">
-    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
-        <h5 class="m-0 fw-bold text-info"><i class="bi bi-gear-fill me-2"></i> MODELASI SYSTEM ADMIN (v0.5.7)</h5>
-        <button class="btn btn-sm btn-outline-danger" id="adminLogoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</button>
-    </div>
-
-    <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-keys" type="button"><i class="bi bi-key-fill me-1"></i> API & Global Tag</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-models" type="button"><i class="bi bi-cpu-fill me-1"></i> AI Models</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-category-logo" type="button"><i class="bi bi-tags-fill me-1"></i> Phân, Logo và Tên</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-data" type="button"><i class="bi bi-database-fill me-1"></i> Data</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-prompt" type="button"><i class="bi bi-file-earmark-text-fill me-1"></i> System Prompt</button>
-        </li>
-    </ul>
-
-    <div class="tab-content" id="adminTabsContent" style="flex:1; overflow-y:auto; padding-right: 4px;">
-        <!-- Tab 1: Keys (Up to 20 API Keys) -->
-        <div class="tab-pane fade show active" id="tab-keys" role="tabpanel">
-            <div class="mb-3">
-                <label for="globalModelTagInput" class="form-label fw-semibold text-info">Global Base Groq Model Tag:</label>
-                <input type="text" id="globalModelTagInput" class="form-control mb-3" placeholder="e.g. openai/gpt-oss-120b">
-                
-                <h6 class="fw-semibold text-info mb-2"><i class="bi bi-key me-1"></i> Groq API Keys (Lên tới 20 khoá, không bắt buộc)</h6>
-                <div id="apiKeysContainer" class="d-flex flex-column gap-2 mb-3">
-                    <!-- Dynamically generated 20 API Key inputs -->
-                </div>
+<!-- Modal for Raw URL Testing Preview -->
+<div class="modal fade" id="testPromptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold text-info"><i class="bi bi-code-square me-2"></i> Raw GitHub / URL Prompt Fetch Test</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>
-
-        <!-- Tab 2: AI Models -->
-        <div class="tab-pane fade" id="tab-models" role="tabpanel">
-            <div class="p-3 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
-                <h6 class="fw-bold text-info mb-3" id="modelFormTitle"><i class="bi bi-plus-circle me-1"></i> Create / Update AI Model</h6>
-                <input type="hidden" id="editingModelId" value="">
-                
+            <div class="modal-body">
                 <div class="mb-2">
-                    <label for="presetNameSelect" class="form-label small fw-bold">Chọn Tên Mẫu Có Sẵn (Điền nhanh App & Developer, có thể chỉnh sửa tự do):</label>
-                    <select id="presetNameSelect" class="form-select form-select-sm">
-                        <option value="">-- Tự nhập thủ công / Không chọn mẫu --</option>
-                    </select>
+                    <strong>Target URL:</strong>
+                    <div id="modalTestUrl" class="small text-break text-warning font-monospace mt-1 p-2 rounded bg-dark border border-secondary"></div>
                 </div>
-
-                <div class="row g-2 mb-2">
-                    <div class="col-md-6">
-                        <label for="modelNameInput" class="form-label small fw-bold">Model Display Name:</label>
-                        <input type="text" id="modelNameInput" class="form-control form-control-sm" placeholder="e.g. GPT-4">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="modelAppInput" class="form-label small fw-bold">App Name (Ghi trên Phân):</label>
-                        <input type="text" id="modelAppInput" class="form-control form-control-sm" placeholder="e.g. ChatGPT">
-                    </div>
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <span id="modalTestStatus" class="badge bg-secondary ms-2">Pending...</span>
                 </div>
-
-                <div class="row g-2 mb-2">
-                    <div class="col-md-6">
-                        <label for="modelDeveloperInput" class="form-label small fw-bold">Nhà phát triển (Developer):</label>
-                        <input type="text" id="modelDeveloperInput" class="form-control form-control-sm" placeholder="e.g. OpenAI">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="modelCategorySelect" class="form-label small fw-bold">Phân (Category):</label>
-                        <select id="modelCategorySelect" class="form-select form-select-sm"></select>
-                    </div>
-                </div>
-
-                <div class="mb-2">
-                    <label for="modelLogoSelect" class="form-label small fw-bold">Logo:</label>
-                    <select id="modelLogoSelect" class="form-select form-select-sm"></select>
-                </div>
-
-                <div class="mb-3" id="modelSubSystemContainer">
-                    <label for="modelSubSystemInput" class="form-label small fw-bold">Model Sub-System Instructions:</label>
-                    <textarea id="modelSubSystemInput" class="form-control form-control-sm" rows="2" placeholder="Instructions..."></textarea>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-success btn-sm flex-fill fw-bold" id="saveModelBtn">Save Model</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="cancelModelEditBtn">Cancel</button>
+                <div>
+                    <strong>Fetched Content Preview (<span id="modalTestLength">0</span> chars):</strong>
+                    <div id="modalTestContent" class="test-raw-preview mt-2">No content fetched yet.</div>
                 </div>
             </div>
-            <div id="adminModelsList"></div>
-        </div>
-
-        <!-- Tab 3: Phân, Logo và Tên -->
-        <div class="tab-pane fade" id="tab-category-logo" role="tabpanel">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-folder-fill me-1"></i> Quản Lý Phân</h6>
-                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
-                        <input type="hidden" id="editingCategoryId" value="">
-                        <label for="categoryNameInput" class="form-label visually-hidden">Tên Phân</label>
-                        <input type="text" id="categoryNameInput" class="form-control form-control-sm mb-2" placeholder="Tên Phân (Ví dụ: ChatGPT)">
-                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="saveCategoryBtn">Tạo / Cập nhật Phân</button>
-                    </div>
-                    <div id="categoriesListContainer"></div>
-                </div>
-
-                <div class="col-md-4">
-                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-bookmark-star-fill me-1"></i> Quản Lý Tên Mẫu</h6>
-                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
-                        <input type="hidden" id="editingPresetNameId" value="">
-                        <label for="presetTitleInput" class="form-label visually-hidden">Tên Mẫu Model</label>
-                        <input type="text" id="presetTitleInput" class="form-control form-control-sm mb-2" placeholder="Tên Model (vd: GPT-4o)">
-                        <label for="presetAppInput" class="form-label visually-hidden">Tên App Mẫu</label>
-                        <input type="text" id="presetAppInput" class="form-control form-control-sm mb-2" placeholder="Tên App (vd: ChatGPT)">
-                        <label for="presetDevInput" class="form-label visually-hidden">Nhà phát triển Mẫu</label>
-                        <input type="text" id="presetDevInput" class="form-control form-control-sm mb-2" placeholder="Nhà phát triển (vd: OpenAI)">
-                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="savePresetNameBtn">Tạo / Cập nhật Tên</button>
-                    </div>
-                    <div id="presetNamesListContainer"></div>
-                </div>
-
-                <div class="col-md-4">
-                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-image-fill me-1"></i> Quản Lý Logo</h6>
-                    <div class="p-2 rounded border border-secondary mb-3" style="background-color: var(--card-bg);">
-                        <input type="hidden" id="editingLogoId" value="">
-                        <label for="logoNameInput" class="form-label visually-hidden">Tên Logo</label>
-                        <input type="text" id="logoNameInput" class="form-control form-control-sm mb-2" placeholder="Tên Logo">
-                        <label for="logoLightInput" class="form-label visually-hidden">Link Sáng</label>
-                        <input type="text" id="logoLightInput" class="form-control form-control-sm mb-2" placeholder="Link Sáng (Light Theme URL)">
-                        <label for="logoDarkInput" class="form-label visually-hidden">Link Tối</label>
-                        <input type="text" id="logoDarkInput" class="form-control form-control-sm mb-2" placeholder="Link Tối (Dark Theme URL)">
-                        <button class="btn btn-primary btn-sm w-100 fw-bold" id="saveLogoBtn">Tạo / Cập nhật Logo</button>
-                    </div>
-                    <div id="logosListContainer"></div>
-                </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary btn-sm fw-bold" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
-
-        <!-- Tab 4: Data Tab -->
-        <div class="tab-pane fade" id="tab-data" role="tabpanel">
-            <h6 class="fw-bold text-info mb-3"><i class="bi bi-database me-1"></i> Tổng Hợp Dữ Liệu Hệ Thống</h6>
-            
-            <div class="mb-3">
-                <div class="data-section-header" id="dataCategoriesHeader">
-                    <span><i class="bi bi-folder2-open me-2"></i> Phân Dữ Liệu (<span id="dataCatCount">0</span>)</span>
-                    <i class="bi bi-chevron-down"></i>
-                </div>
-                <div class="data-section-body" id="dataCategoriesBody"></div>
-            </div>
-
-            <div class="mb-3">
-                <div class="data-section-header" id="dataPresetNamesHeader">
-                    <span><i class="bi bi-bookmark-star me-2"></i> Tên Mẫu Dữ Liệu (<span id="dataPresetCount">0</span>)</span>
-                    <i class="bi bi-chevron-down"></i>
-                </div>
-                <div class="data-section-body" id="dataPresetNamesBody"></div>
-            </div>
-
-            <div class="mb-3">
-                <div class="data-section-header" id="dataLogosHeader">
-                    <span><i class="bi bi-image me-2"></i> Logo Dữ Liệu (<span id="dataLogoCount">0</span>)</span>
-                    <i class="bi bi-chevron-down"></i>
-                </div>
-                <div class="data-section-body" id="dataLogosBody"></div>
-            </div>
-
-            <div class="mb-3">
-                <div class="data-section-header" id="dataModelsHeader">
-                    <span><i class="bi bi-cpu me-2"></i> Model AI Dữ Liệu (<span id="dataModelCount">0</span>)</span>
-                    <i class="bi bi-chevron-down"></i>
-                </div>
-                <div class="data-section-body" id="dataModelsBody"></div>
-            </div>
-        </div>
-
-        <!-- Tab 5: System Prompt -->
-        <div class="tab-pane fade" id="tab-prompt" role="tabpanel">
-            <label for="systemPromptInput" class="form-label fw-semibold">Primary System Prompt:</label>
-            <textarea id="systemPromptInput" class="form-control" rows="8"></textarea>
-        </div>
-    </div>
-
-    <div class="mt-3 pt-2 border-top border-secondary">
-        <button class="btn btn-primary w-100 fw-bold" id="saveAllConfigBtn">Save All Configuration to Cloud</button>
-        <div id="saveStatusAlert" class="small text-center mt-2"></div>
     </div>
 </div>
 
@@ -290,17 +625,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('keydown', e => {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === '+' || e.key === '-' || e.key === '='))) {
-        e.preventDefault();
-        return false;
-    }
-});
-document.addEventListener('wheel', e => {
-    if (e.ctrlKey) e.preventDefault();
-}, { passive: false });
-
 let adminData = {
     apiKeys: [],
     globalModelTag: "openai/gpt-oss-120b",
@@ -316,44 +640,176 @@ const adminDashboardBox = document.getElementById('adminDashboardBox');
 const adminPasswordInput = document.getElementById('adminPasswordInput');
 const adminLoginBtn = document.getElementById('adminLoginBtn');
 const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+const loginFeedback = document.getElementById('loginFeedback');
 
-// Build 20 API Key inputs dynamically
+const testPromptModal = new bootstrap.Modal(document.getElementById('testPromptModal'));
+const modalTestUrl = document.getElementById('modalTestUrl');
+const modalTestStatus = document.getElementById('modalTestStatus');
+const modalTestLength = document.getElementById('modalTestLength');
+const modalTestContent = document.getElementById('modalTestContent');
+
+// Build 20 API Key inputs dynamically in responsive grid
 const apiKeysContainer = document.getElementById('apiKeysContainer');
 for (let i = 1; i <= 20; i++) {
-    const div = document.createElement('div');
-    div.className = "mb-1";
-    div.innerHTML = `
-        <label for="apiKey${i}Input" class="form-label small fw-semibold text-secondary mb-1">Groq API Key ${i} (Không bắt buộc):</label>
-        <input type="password" id="apiKey${i}Input" class="form-control form-control-sm" placeholder="gsk_...">
+    const col = document.createElement('div');
+    col.className = "col-12 col-md-6 col-lg-4";
+    col.innerHTML = `
+        <div class="p-2 rounded bg-dark border border-secondary">
+            <label for="apiKey${i}Input" class="form-label small fw-semibold text-secondary mb-1">Groq Key ${i}:</label>
+            <input type="password" id="apiKey${i}Input" class="form-control form-control-sm" placeholder="gsk_...">
+        </div>
     `;
-    apiKeysContainer.appendChild(div);
+    apiKeysContainer.appendChild(col);
 }
 
+// Auto-login if password cached
 const cachedPassword = localStorage.getItem("modelasi_admin_password");
 if (cachedPassword === "ans09045") {
     adminPasswordInput.value = cachedPassword;
     loginScreenBox.classList.add("d-none");
     adminDashboardBox.classList.remove("d-none");
+    adminDashboardBox.classList.add("d-flex");
     loadConfigFromCloud();
 }
 
 adminLoginBtn.addEventListener("click", async () => {
     const pwd = adminPasswordInput.value.trim();
     if (pwd === "ans09045") {
+        loginFeedback.classList.add("d-none");
         localStorage.setItem("modelasi_admin_password", pwd);
         loginScreenBox.classList.add("d-none");
         adminDashboardBox.classList.remove("d-none");
+        adminDashboardBox.classList.add("d-flex");
         await loadConfigFromCloud();
     } else {
-        alert("Incorrect password!");
+        loginFeedback.classList.remove("d-none");
     }
+});
+
+adminPasswordInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") adminLoginBtn.click();
 });
 
 adminLogoutBtn.addEventListener("click", () => {
     localStorage.removeItem("modelasi_admin_password");
+    adminDashboardBox.classList.remove("d-flex");
     adminDashboardBox.classList.add("d-none");
-    loginScreenBox.classList.add("d-none");
+    loginScreenBox.classList.remove("d-none");
     adminPasswordInput.value = "";
+});
+
+function extractUrlFromInput(text) {
+    if (!text) return null;
+    const systemMatch = text.match(/system\s*=\s*["']([^"']+)["']/i);
+    if (systemMatch && systemMatch[1]) {
+        return systemMatch[1].trim();
+    }
+    const plainUrlMatch = text.match(/(https?:\/\/[^\s"']+)/i);
+    if (plainUrlMatch && plainUrlMatch[1]) {
+        return plainUrlMatch[1].trim();
+    }
+    return null;
+}
+
+// Convert GitHub web/raw links to direct raw.githubusercontent.com links
+function normalizeGitHubUrl(url) {
+    if (!url) return url;
+    let u = url.trim();
+    
+    // Matches patterns like:
+    // github.com/user/repo/raw/refs/heads/branch/file
+    // github.com/user/repo/raw/branch/file
+    // github.com/user/repo/blob/branch/file
+    const ghRegex = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)\/(?:raw|blob)\/(?:refs\/heads\/)?([^\/]+)\/(.+)$/i;
+    const match = u.match(ghRegex);
+    if (match) {
+        const [, user, repo, branch, path] = match;
+        return `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${path}`;
+    }
+    return u;
+}
+
+// Generate jsDelivr CDN backup link for GitHub resources
+function getJsDelivrUrl(rawUrl) {
+    const rawGhRegex = /^https?:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/i;
+    const match = rawUrl.match(rawGhRegex);
+    if (match) {
+        const [, user, repo, branch, path] = match;
+        return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
+    }
+    return null;
+}
+
+// Multi-fallback fetcher to bypass CORS and redirect issues
+async function fetchWithFallback(originalUrl) {
+    const normalized = normalizeGitHubUrl(originalUrl);
+    const urlsToTry = [normalized];
+    
+    // Option 2: jsDelivr CDN (extremely reliable for GitHub raw files)
+    const jsdelivr = getJsDelivrUrl(normalized);
+    if (jsdelivr && !urlsToTry.includes(jsdelivr)) {
+        urlsToTry.push(jsdelivr);
+    }
+
+    // Option 3: AllOrigins CORS Proxy fallback
+    urlsToTry.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(normalized)}`);
+
+    let lastError = null;
+    for (const targetUrl of urlsToTry) {
+        try {
+            const response = await fetch(targetUrl);
+            if (response.ok) {
+                const textData = await response.text();
+                return { text: textData, resolvedUrl: targetUrl };
+            }
+        } catch (err) {
+            lastError = err;
+        }
+    }
+    throw lastError || new Error("Không thể tải nội dung từ URL này.");
+}
+
+async function handleTestFetchPrompt(rawInputText) {
+    const extractedUrl = extractUrlFromInput(rawInputText);
+    
+    modalTestUrl.innerText = extractedUrl || "No valid URL found in input.";
+    modalTestStatus.className = "badge bg-warning text-dark";
+    modalTestStatus.innerText = "Fetching...";
+    modalTestLength.innerText = "0";
+    modalTestContent.innerText = "Connecting to URL with CORS fallbacks...";
+
+    testPromptModal.show();
+
+    if (!extractedUrl) {
+        modalTestStatus.className = "badge bg-danger";
+        modalTestStatus.innerText = "No URL Extracted";
+        modalTestContent.innerText = "Could not find a valid raw URL or system = \"https://...\" format in your input.";
+        return;
+    }
+
+    try {
+        const { text, resolvedUrl } = await fetchWithFallback(extractedUrl);
+        
+        modalTestUrl.innerText = `${extractedUrl}\n↳ Resolved: ${resolvedUrl}`;
+        modalTestStatus.className = "badge bg-success";
+        modalTestStatus.innerText = `Success (200 OK)`;
+        modalTestLength.innerText = text.length.toLocaleString();
+        modalTestContent.innerText = text.length > 0 ? text : "[Empty response received]";
+    } catch (err) {
+        modalTestStatus.className = "badge bg-danger";
+        modalTestStatus.innerText = "Fetch Failed";
+        modalTestContent.innerText = `Error fetching URL:\n${err.message}\n\nPlease check network connection or file path.`;
+    }
+}
+
+document.getElementById('testModelSubSystemBtn').addEventListener('click', () => {
+    const text = document.getElementById('modelSubSystemInput').value.trim();
+    handleTestFetchPrompt(text);
+});
+
+document.getElementById('testPrimaryPromptBtn').addEventListener('click', () => {
+    const text = document.getElementById('systemPromptInput').value.trim();
+    handleTestFetchPrompt(text);
 });
 
 async function loadConfigFromCloud() {
@@ -372,7 +828,7 @@ async function loadConfigFromCloud() {
         }
         populateAdminUI();
     } catch(e) {
-        console.error(e);
+        console.error("Firestore read error:", e);
     }
 }
 
@@ -421,7 +877,7 @@ document.getElementById('savePresetNameBtn').addEventListener("click", () => {
     const app = document.getElementById('presetAppInput').value.trim();
     const developer = document.getElementById('presetDevInput').value.trim();
     const editId = document.getElementById('editingPresetNameId').value;
-    if (!title) return alert("Nhập tên model mẫu!");
+    if (!title) return;
 
     if (editId) {
         const p = adminData.presetNames.find(item => item.id === editId);
@@ -443,14 +899,14 @@ function renderPresetNamesUI() {
     container.innerHTML = "";
     adminData.presetNames.forEach(p => {
         container.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <div>
-                    <span class="fw-bold">${escapeHtml(p.title)}</span>
-                    <div class="small text-secondary" style="font-size:10px;">App: ${escapeHtml(p.app)} | Dev: ${escapeHtml(p.developer)}</div>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-light">${escapeHtml(p.title)}</div>
+                    <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(p.app)} | Dev: ${escapeHtml(p.developer)}</div>
                 </div>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editPresetName('${p.id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editPresetName('${p.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -474,7 +930,6 @@ window.delPresetName = function(id) {
     updateModelDropdowns();
 };
 
-// Preset dropdown selection logic in Model tab (Autofills fields without overwriting Model Display Name unless intended)
 document.getElementById('presetNameSelect').addEventListener("change", (e) => {
     const selectedId = e.target.value;
     const nameInput = document.getElementById('modelNameInput');
@@ -495,7 +950,7 @@ document.getElementById('presetNameSelect').addEventListener("change", (e) => {
 document.getElementById('saveCategoryBtn').addEventListener("click", () => {
     const name = document.getElementById('categoryNameInput').value.trim();
     const editId = document.getElementById('editingCategoryId').value;
-    if (!name) return alert("Nhập tên phân!");
+    if (!name) return;
 
     if (editId) {
         const c = adminData.categories.find(item => item.id === editId);
@@ -515,11 +970,13 @@ function renderCategoriesUI() {
     container.innerHTML = "";
     adminData.categories.forEach(c => {
         container.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <span>${escapeHtml(c.name)}</span>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editCat('${c.id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <span class="fw-semibold text-light">${escapeHtml(c.name)}</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editCat('${c.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -547,7 +1004,7 @@ document.getElementById('saveLogoBtn').addEventListener("click", () => {
     const light = document.getElementById('logoLightInput').value.trim();
     const dark = document.getElementById('logoDarkInput').value.trim();
     const editId = document.getElementById('editingLogoId').value;
-    if (!name) return alert("Nhập tên logo!");
+    if (!name) return;
 
     if (editId) {
         const l = adminData.logos.find(item => item.id === editId);
@@ -569,14 +1026,15 @@ function renderLogosUI() {
     container.innerHTML = "";
     adminData.logos.forEach(l => {
         container.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <div>
-                    <span class="fw-bold">${escapeHtml(l.name)}</span>
-                    <div class="small text-secondary" style="font-size:10px;">Light: ${escapeHtml(l.light || 'None')} | Dark: ${escapeHtml(l.dark || 'None')}</div>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-light">${escapeHtml(l.name)}</div>
+                    <div class="small text-secondary" style="font-size:10px;">L: ${escapeHtml(l.light || 'None')}</div>
+                    <div class="small text-secondary" style="font-size:10px;">D: ${escapeHtml(l.dark || 'None')}</div>
                 </div>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editLogo('${l.id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editLogo('${l.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -610,7 +1068,7 @@ document.getElementById('saveModelBtn').addEventListener("click", () => {
     const subSystem = document.getElementById('modelSubSystemInput').value.trim();
     const editId = document.getElementById('editingModelId').value;
 
-    if (!name) return alert("Nhập tên Model!");
+    if (!name) return;
 
     if (editId) {
         const m = adminData.models.find(item => item.id === editId);
@@ -635,16 +1093,14 @@ function renderModelsUI() {
     adminData.models.forEach(m => {
         const catObj = adminData.categories.find(c => c.id === m.categoryId);
         container.innerHTML += `
-            <div class="p-2 mb-2 rounded border border-secondary" style="background:var(--card-bg)">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-bold text-info">${escapeHtml(m.name)}</span>
-                        <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
-                    </div>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-info">${escapeHtml(m.name)}</div>
+                    <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -674,80 +1130,76 @@ window.delModel = function(id) {
     renderDataTab();
 };
 
-// Data Tab rendering and sections
 function renderDataTab() {
     document.getElementById('dataCatCount').innerText = adminData.categories.length;
     document.getElementById('dataPresetCount').innerText = adminData.presetNames.length;
     document.getElementById('dataLogoCount').innerText = adminData.logos.length;
     document.getElementById('dataModelCount').innerText = adminData.models.length;
 
-    // Categories Data
     const catBody = document.getElementById('dataCategoriesBody');
     catBody.innerHTML = "";
     adminData.categories.forEach(c => {
         catBody.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <span>${escapeHtml(c.name)}</span>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editCat('${c.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <span class="fw-semibold text-light">${escapeHtml(c.name)}</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editCat('${c.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delCat('${c.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
     });
 
-    // Preset Names Data
     const presetBody = document.getElementById('dataPresetNamesBody');
     presetBody.innerHTML = "";
     adminData.presetNames.forEach(p => {
         presetBody.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <div>
-                    <span class="fw-bold">${escapeHtml(p.title)}</span>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-light">${escapeHtml(p.title)}</div>
                     <div class="small text-secondary" style="font-size:10px;">App: ${escapeHtml(p.app)} | Dev: ${escapeHtml(p.developer)}</div>
                 </div>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editPresetName('${p.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editPresetName('${p.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delPresetName('${p.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
     });
 
-    // Logos Data
     const logoBody = document.getElementById('dataLogosBody');
     logoBody.innerHTML = "";
     adminData.logos.forEach(l => {
         logoBody.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded border border-secondary" style="background:var(--card-bg)">
-                <div>
-                    <span class="fw-bold">${escapeHtml(l.name)}</span>
-                    <div class="small text-secondary" style="font-size:10px;">Light: ${escapeHtml(l.light || 'None')} | Dark: ${escapeHtml(l.dark || 'None')}</div>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-light">${escapeHtml(l.name)}</div>
+                    <div class="small text-secondary" style="font-size:10px;">L: ${escapeHtml(l.light || 'None')}</div>
+                    <div class="small text-secondary" style="font-size:10px;">D: ${escapeHtml(l.dark || 'None')}</div>
                 </div>
-                <div>
-                    <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editLogo('${l.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editLogo('${l.id}'); document.querySelector('button[data-bs-target=&quot;#tab-category-logo&quot;]').click();"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delLogo('${l.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
     });
 
-    // Models Data
     const modelBody = document.getElementById('dataModelsBody');
     modelBody.innerHTML = "";
     adminData.models.forEach(m => {
         const catObj = adminData.categories.find(c => c.id === m.categoryId);
         modelBody.innerHTML += `
-            <div class="p-2 mb-2 rounded border border-secondary" style="background:var(--card-bg)">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-bold text-info">${escapeHtml(m.name)}</span>
-                        <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-warning py-0 px-1" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
-                    </div>
+            <div class="data-card">
+                <div class="text-content-wrapper">
+                    <div class="fw-bold text-info">${escapeHtml(m.name)}</div>
+                    <div class="small text-secondary" style="font-size:11px;">App: ${escapeHtml(m.app)} | Dev: ${escapeHtml(m.developer)} | Phân: ${catObj ? escapeHtml(catObj.name) : 'None'}</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline-warning p-1 px-2" onclick="window.editModel('${m.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger p-1 px-2" onclick="window.delModel('${m.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -781,16 +1233,19 @@ document.getElementById('saveAllConfigBtn').addEventListener("click", async () =
 
     const statusAlert = document.getElementById('saveStatusAlert');
     statusAlert.innerText = "Saving to Firebase Cloud...";
-    statusAlert.className = "small text-center mt-2 text-warning";
+    statusAlert.className = "small text-center mt-2 text-warning fw-bold";
 
     try {
         const docRef = doc(db, "modelasi_settings", "config");
         await setDoc(docRef, { ...adminData, updatedAt: new Date().toISOString() }, { merge: true });
-        statusAlert.innerText = "✓ Configuration saved successfully!";
-        statusAlert.className = "small text-center mt-2 text-success";
+        statusAlert.innerText = "✓ Configuration saved successfully to Firebase Cloud!";
+        statusAlert.className = "small text-center mt-2 text-success fw-bold";
+        setTimeout(() => {
+            statusAlert.innerText = "";
+        }, 4000);
     } catch(e) {
-        statusAlert.innerText = "Error saving configuration!";
-        statusAlert.className = "small text-center mt-2 text-danger";
+        statusAlert.innerText = "Error saving configuration to Cloud!";
+        statusAlert.className = "small text-center mt-2 text-danger fw-bold";
     }
 });
 
