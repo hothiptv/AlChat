@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ModelAsi v0.5.8</title>
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Marked Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        [data-theme="dark"] {
+            --bg-color: #121417;
+            --panel-bg: #1a1d23;
+            --card-bg: #22262e;
+            --border-color: #2f3542;
+            --accent-color: #10b981; /* Xanh lá chủ đạo */
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --neon-blue: #34d399; /* Xanh lá sáng */
+            --input-bg: rgba(34, 38, 46, 0.95);
+            --code-bg: #171a21;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --panel-bg: #ffffff;
+            --card-bg: #f8fafc;
+            --border-color: #cbd5e1;
+            --accent-color: #10b981;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --neon-blue: #059669;
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --code-bg: #f1f5f9;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        input, textarea, code, pre {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-viewport {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            padding: 12px;
+            gap: 12px;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 270px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            z-index: 100;
+            height: 100%;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-brand-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            object-fit: cover;
+        }
+
+        .sidebar-brand-title {
+            font-size: 19px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .version-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--neon-blue);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .active-model-pill {
+            font-size: 12px;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .active-model-pill:hover {
+            background-color: var(--neon-blue);
+            color: #000;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            color: var(--text-sub);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+
+        .session-item:hover {
+            border-color: var(--border-color);
+            color: var(--text-main);
+            transform: translateX(2px);
+        }
+
+        .session-item.active {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0.6;
+        }
+
+        .session-item:hover .session-actions {
+            opacity: 1;
+        }
+
+        .session-actions button {
+            background: transparent;
+            border: none;
+            color: inherit;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .session-actions button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .welcome-screen {
+            margin: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            margin-bottom: 12px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 16px;
+            max-width: 85%;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .user-msg {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-msg {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            align-self: flex-start;
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            max-width: 100%;
+        }
+
+        /* Khắc phục bảng: Cho phép cuộn ngang thoải mái, không bị bóp méo chữ */
+        .msg-text-block {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .msg-text-block table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: var(--code-bg);
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .msg-text-block th, .msg-text-block td {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            white-space: normal;
+            min-width: 150px;
+        }
+
+        .msg-text-block th {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--neon-blue);
+            font-weight: 700;
+        }
+
+        .msg-text-block tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .thinking-bubble {
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            padding: 10px 16px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner-ring {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-top: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-floating-wrapper {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+        }
+
+        .input-area {
+            background-color: var(--input-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 6px 8px 6px 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-plus-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--neon-blue);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .custom-input {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-main) !important;
+            outline: none !important;
+            font-size: 15px;
+            flex: 1;
+        }
+        
+        .custom-input::placeholder {
+            color: var(--text-sub) !important;
+            opacity: 0.8;
+        }
+
+        .btn-send-icon {
+            width: 0;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .btn-send-icon.show-btn {
+            opacity: 1;
+            pointer-events: auto;
+            width: 42px;
+        }
+
+        .plus-action-menu {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+            z-index: 50;
+        }
+
+        .plus-action-menu.show { display: flex; }
+
+        .plus-action-item {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 8px 12px;
+            text-align: left;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .plus-action-item:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        
+        .form-label {
+            color: var(--text-main) !important;
+            font-weight: 600;
+        }
+
+        .category-group-header {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--neon-blue);
+            padding: 8px 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-group-models {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px 0 6px 10px;
+        }
+
+        .category-group-models.collapsed {
+            display: none;
+        }
+
+        .model-card-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .model-card-item:hover {
+            border-color: var(--neon-blue);
+        }
+
+        .model-card-item.selected {
+            border-color: var(--neon-blue);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .model-logo-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+        }
+
+        @media (max-width: 768px) {
+            .app-viewport { padding: 6px; gap: 0; }
+            .sidebar { position: fixed; top: 6px; left: 6px; bottom: 6px; transform: translateX(-105%); width: 280px; }
+            .sidebar.show { transform: translateX(0); }
+            .overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<input type="file" id="documentFileInput" accept=".txt,.json,.js,.html,.css,.md,.csv,.py,.java,.cpp,.ts" multiple style="display: none;">
+
+<div class="app-viewport">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="sidebar-brand-img" alt="Logo">
+            <span class="sidebar-brand-title">ModelAsi</span>
+            <span class="version-badge">v0.5.8</span>
+            <button class="btn-close btn-close-white ms-auto d-md-none" id="closeSidebarBtn"></button>
+        </div>
+
+        <button class="btn btn-primary w-100 mb-2 shadow-sm fw-bold" id="newChatBtn" style="background-color: var(--accent-color); border-color: var(--accent-color);">
+            <i class="bi bi-plus-lg me-1"></i> New Chat (<span id="sessionCount">1</span>/5)
+        </button>
+
+        <button class="btn btn-outline-secondary w-100 mb-3" id="userSettingsBtn" style="color: var(--text-main); border-color: var(--border-color);">
+            <i class="bi bi-gear-fill me-1"></i> Settings
+        </button>
+
+        <div id="sessionList" style="flex: 1; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Main Chat Window -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary d-md-none" id="menuToggleBtn"><i class="bi bi-list"></i></button>
+                <h5 class="m-0 fw-bold"><i class="bi bi-cpu me-1 text-success"></i> ModelAsi</h5>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="active-model-pill" id="headerActiveModelBtn" title="Click to switch Model">
+                    <img id="headerModelLogo" src="" class="rounded-circle" style="width:16px;height:16px;display:none;" alt="">
+                    <i class="bi bi-robot" id="headerModelFallbackIcon"></i> 
+                    <span id="headerModelName">Select Model...</span> 
+                    <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+                </div>
+                <button class="btn btn-outline-danger btn-sm ms-1" id="clearChatBtn" title="Clear Chat"><i class="bi bi-trash"></i></button>
+            </div>
+        </div>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <!-- Input Area -->
+        <div class="input-floating-wrapper" id="inputWrapper">
+            <div class="input-area">
+                <div class="plus-action-menu" id="plusActionMenu">
+                    <button type="button" class="plus-action-item" id="menuSelectModelBtn">
+                        <i class="bi bi-cpu-fill text-success"></i> Select AI Model
+                    </button>
+                    <button type="button" class="plus-action-item" id="menuAttachFileBtn">
+                        <i class="bi bi-file-earmark-plus-fill text-success"></i> Attach Files
+                    </button>
+                </div>
+
+                <div class="attached-files-container" id="attachedFilesContainer" style="display: none; padding: 4px 8px; gap: 6px;"></div>
+                
+                <div class="input-row">
+                    <button type="button" class="btn-plus-icon" id="plusBtn" title="Actions">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <input type="text" id="userInput" class="form-control custom-input" placeholder="Type a message..." autocomplete="off">
+                    <button type="button" class="btn-send-icon" id="sendBtn" title="Send"><i class="bi bi-arrow-return-left"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Select Model -->
+<div class="modal fade" id="selectModelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold text-success"><i class="bi bi-cpu me-2"></i> Select AI Model</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="mb-3">
+                    <input type="text" id="modelSearchInput" class="form-control" placeholder="🔍 Search models or apps...">
+                </div>
+                <div id="modelListModalContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal User Settings -->
+<div class="modal fade" id="userSettingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold"><i class="bi bi-sliders me-2"></i> User Settings</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Personal System Instructions / Profile:</label>
+                    <textarea id="settingsSystemPrompt" class="form-control" rows="3" placeholder="e.g. Tôi là An, lập trình viên React..."></textarea>
+                    <div class="form-text text-secondary mt-1">Cài đặt System cá nhân này sẽ được ghép nối vào System Prompt mặc định và lưu tại localStorage.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Appearance Theme:</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeDark" value="dark" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeDark"><i class="bi bi-moon-stars-fill me-1"></i> Dark</label>
+
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeLight" value="light" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeLight"><i class="bi bi-sun-fill me-1"></i> Light</label>
+
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeSystem" value="system" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeSystem"><i class="bi bi-laptop me-1"></i> System</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-success w-100 fw-bold" id="saveUserSettingsBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
+  authDomain: "dataan-d19b7.firebaseapp.com",
+  databaseURL: "https://dataan-d19b7-default-rtdb.firebaseio.com",
+  projectId: "dataan-d19b7",
+  storageBucket: "dataan-d19b7.firebasestorage.app",
+  messagingSenderId: "634110626824",
+  appId: "1:634110626824:web:903a5181db232369f495bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let groqApiKeys = [];
+let currentKeyIndex = 0;
+let dbModelsList = [];
+let dbCategoriesList = [];
+let dbLogosList = [];
+let globalModelTag = "openai/gpt-oss-120b";
+let adminDefaultSystemPrompt = "You are ModelAsi, an intelligent and helpful AI assistant.";
+
+let userPersonalSystemPrompt = localStorage.getItem("modelasi_user_personal_system") || "Tôi là người dùng ứng dụng.";
+let selectedModelId = localStorage.getItem("modelasi_selected_model_id") || "";
+
+let sessionNames = JSON.parse(localStorage.getItem("modelasi_session_names") || "{}");
+let activeSessionId = localStorage.getItem("modelasi_active_session") || "session_1";
+let sessions = {};
+try { sessions = JSON.parse(localStorage.getItem("modelasi_sessions") || "{}"); } catch(e){}
+
+let isGenerating = false;
+let currentTheme = localStorage.getItem("modelasi_theme") || "dark";
+
+function applyTheme(theme) {
+    let effectiveTheme = theme;
+    if (theme === "system") {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", effectiveTheme);
+}
+applyTheme(currentTheme);
+
+function getLogoUrl(logoId) {
+    const logoObj = dbLogosList.find(l => l.id === logoId);
+    if (!logoObj) return "";
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    return isDark ? (logoObj.dark || logoObj.light || "") : (logoObj.light || logoObj.dark || "");
+}
+
+function getActiveModelObj() {
+    if (dbModelsList.length === 0) return { id: "", name: "ModelAsi AI", app: "ModelAsi", developer: "System", categoryId: "", logoId: "" };
+    return dbModelsList.find(m => m.id === selectedModelId) || dbModelsList[0];
+}
+
+function getFullSystemPrompt() {
+    let result = adminDefaultSystemPrompt;
+    if (userPersonalSystemPrompt.trim()) {
+        result += `\n\n[PERSONAL USER INSTRUCTIONS / PROFILE]:\n${userPersonalSystemPrompt}`;
+    }
+    
+    let allModelsSummary = dbModelsList.map(m => `- ${m.name} (App: ${m.app || 'N/A'}, Developer: ${m.developer || 'N/A'})`).join("\n");
+    result += `\n\n[SYSTEM KNOWLEDGE]: You are ModelAsi. You have access to the following models in the system:\n${allModelsSummary}`;
+
+    const activeModel = getActiveModelObj();
+    if (activeModel.id) {
+        result += `\n\n[ACTIVE MODEL IDENTITY]:\nYou are currently operating as "${activeModel.name}" (App: ${activeModel.app}, Developer: ${activeModel.developer}).`;
+        if (activeModel.subSystem) {
+            result += `\n[SPECIFIC INSTRUCTIONS]:\n${activeModel.subSystem}`;
+        }
+    }
+    return result;
+}
+
+const overlay = document.getElementById('overlay');
+const sidebar = document.getElementById('sidebar');
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+const chatBox = document.getElementById('chatBox');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const newChatBtn = document.getElementById('newChatBtn');
+const clearChatBtn = document.getElementById('clearChatBtn');
+
+const plusBtn = document.getElementById('plusBtn');
+const plusActionMenu = document.getElementById('plusActionMenu');
+const menuSelectModelBtn = document.getElementById('menuSelectModelBtn');
+const menuAttachFileBtn = document.getElementById('menuAttachFileBtn');
+
+const headerActiveModelBtn = document.getElementById('headerActiveModelBtn');
+const headerModelName = document.getElementById('headerModelName');
+const headerModelLogo = document.getElementById('headerModelLogo');
+const headerModelFallbackIcon = document.getElementById('headerModelFallbackIcon');
+
+const documentFileInput = document.getElementById('documentFileInput');
+
+const selectModelModal = new bootstrap.Modal(document.getElementById('selectModelModal'));
+const modelListModalContainer = document.getElementById('modelListModalContainer');
+const modelSearchInput = document.getElementById('modelSearchInput');
+
+const userSettingsModal = new bootstrap.Modal(document.getElementById('userSettingsModal'));
+const userSettingsBtn = document.getElementById('userSettingsBtn');
+const saveUserSettingsBtn = document.getElementById('saveUserSettingsBtn');
+const themeDarkRadio = document.getElementById('themeDark');
+const themeLightRadio = document.getElementById('themeLight');
+const themeSystemRadio = document.getElementById('themeSystem');
+const settingsSystemPrompt = document.getElementById('settingsSystemPrompt');
+
+plusBtn.addEventListener("click", (e) => { e.stopPropagation(); plusActionMenu.classList.toggle("show"); });
+document.addEventListener("click", () => plusActionMenu.classList.remove("show"));
+menuAttachFileBtn.addEventListener("click", () => { documentFileInput.click(); });
+menuSelectModelBtn.addEventListener("click", openModelSelectModal);
+headerActiveModelBtn.addEventListener("click", openModelSelectModal);
+
+function toggleSidebar() { sidebar.classList.toggle('show'); overlay.classList.toggle('show'); }
+if(menuToggleBtn) menuToggleBtn.addEventListener('click', toggleSidebar);
+if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', toggleSidebar);
+
+function updateHeaderModelDisplay() {
+    const m = getActiveModelObj();
+    headerModelName.innerText = m.name || "Select Model";
+    const logoUrl = getLogoUrl(m.logoId);
+    if (logoUrl) {
+        headerModelLogo.src = logoUrl;
+        headerModelLogo.style.display = "inline-block";
+        headerModelFallbackIcon.style.display = "none";
+    } else {
+        headerModelLogo.style.display = "none";
+        headerModelFallbackIcon.style.display = "inline-block";
+    }
+}
+
+function openModelSelectModal() {
+    renderModelSelectorList("");
+    selectModelModal.show();
+}
+
+modelSearchInput.addEventListener("input", (e) => {
+    renderModelSelectorList(e.target.value.toLowerCase());
+});
+
+function renderModelSelectorList(filterText) {
+    modelListModalContainer.innerHTML = "";
+    if (dbModelsList.length === 0) {
+        modelListModalContainer.innerHTML = `<div class="text-center text-secondary py-3">No models available.</div>`;
+        return;
+    }
+
+    const uncategorizedModels = dbModelsList.filter(m => !m.categoryId);
+    
+    dbCategoriesList.forEach(cat => {
+        const catModels = dbModelsList.filter(m => m.categoryId === cat.id && (
+            !filterText || m.name.toLowerCase().includes(filterText) || (m.app && m.app.toLowerCase().includes(filterText))
+        ));
+
+        if (filterText && catModels.length === 0) return;
+
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "mb-3";
+
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "category-group-header";
+        headerDiv.innerHTML = `<span><i class="bi bi-folder2-open me-2"></i>${escapeHtml(cat.name)} (${catModels.length})</span> <i class="bi bi-chevron-down"></i>`;
+        
+        const modelsContainer = document.createElement("div");
+        modelsContainer.className = "category-group-models";
+
+        headerDiv.addEventListener("click", () => {
+            modelsContainer.classList.toggle("collapsed");
+        });
+
+        catModels.forEach(m => {
+            modelsContainer.appendChild(createModelCardElement(m));
+        });
+
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(modelsContainer);
+        modelListModalContainer.appendChild(groupDiv);
+    });
+
+    const filteredUncat = uncategorizedModels.filter(m => !filterText || m.name.toLowerCase().includes(filterText));
+    if (filteredUncat.length > 0) {
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "mb-3";
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "category-group-header";
+        headerDiv.innerHTML = `<span><i class="bi bi-folder2 me-2"></i>Other Models (${filteredUncat.length})</span>`;
+        const modelsContainer = document.createElement("div");
+        modelsContainer.className = "category-group-models";
+        headerDiv.addEventListener("click", () => modelsContainer.classList.toggle("collapsed"));
+
+        filteredUncat.forEach(m => modelsContainer.appendChild(createModelCardElement(m)));
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(modelsContainer);
+        modelListModalContainer.appendChild(groupDiv);
+    }
+}
+
+function createModelCardElement(m) {
+    const isSelected = (m.id === selectedModelId);
+    const card = document.createElement("div");
+    card.className = `model-card-item ${isSelected ? 'selected' : ''}`;
+    const logoUrl = getLogoUrl(m.logoId);
+
+    card.innerHTML = `
+        ${logoUrl ? `<img src="${logoUrl}" class="model-logo-img" alt="">` : `<i class="bi bi-robot fs-5 text-success"></i>`}
+        <div style="flex:1;">
+            <div class="fw-bold text-main" style="font-size: 14px;">${escapeHtml(m.name)}</div>
+            <div class="small text-secondary" style="font-size: 11px;">App: ${escapeHtml(m.app || 'N/A')} | Dev: ${escapeHtml(m.developer || 'N/A')}</div>
+        </div>
+        ${isSelected ? `<span class="badge bg-success text-white fw-bold">Selected</span>` : ''}
+    `;
+
+    card.addEventListener("click", () => {
+        selectedModelId = m.id;
+        localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+        updateHeaderModelDisplay();
+        if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+            sessions[activeSessionId][0].content = getFullSystemPrompt();
+        }
+        saveLocalSessions();
+        selectModelModal.hide();
+    });
+    return card;
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function parseMarkdown(text) {
+    if (typeof marked !== 'undefined' && marked.parse) {
+        try { return marked.parse(text); } catch(e) { return escapeHtml(text); }
+    }
+    return escapeHtml(text);
+}
+
+async function initApp() {
+    const cachedConfig = localStorage.getItem("modelasi_cached_config");
+    if (cachedConfig) {
+        try {
+            const data = JSON.parse(cachedConfig);
+            if (data.apiKeys) groqApiKeys = data.apiKeys;
+            if (data.models) dbModelsList = data.models;
+            if (data.categories) dbCategoriesList = data.categories;
+            if (data.logos) dbLogosList = data.logos;
+            if (data.globalModelTag) globalModelTag = data.globalModelTag;
+            if (data.systemPrompt) adminDefaultSystemPrompt = data.systemPrompt;
+        } catch(e) {}
+    }
+
+    if (dbModelsList.length > 0 && (!selectedModelId || !dbModelsList.some(m => m.id === selectedModelId))) {
+        selectedModelId = dbModelsList[0].id;
+        localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+    }
+
+    updateHeaderModelDisplay();
+    userInput.placeholder = "Type a message...";
+
+    if (!sessions[activeSessionId]) {
+        sessions[activeSessionId] = [{ role: "system", content: getFullSystemPrompt() }];
+    }
+    renderSidebar();
+    renderChat();
+
+    getDoc(doc(db, "modelasi_settings", "config")).then(docSnap => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            localStorage.setItem("modelasi_cached_config", JSON.stringify(data));
+            if (data.apiKeys) groqApiKeys = data.apiKeys;
+            if (data.models) dbModelsList = data.models;
+            if (data.categories) dbCategoriesList = data.categories;
+            if (data.logos) dbLogosList = data.logos;
+            if (data.globalModelTag) globalModelTag = data.globalModelTag;
+            if (data.systemPrompt) adminDefaultSystemPrompt = data.systemPrompt;
+
+            if (dbModelsList.length > 0 && (!selectedModelId || !dbModelsList.some(m => m.id === selectedModelId))) {
+                selectedModelId = dbModelsList[0].id;
+                localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+            }
+            updateHeaderModelDisplay();
+            if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+                sessions[activeSessionId][0].content = getFullSystemPrompt();
+            }
+        }
+    }).catch(e => console.error("Firebase background fetch error:", e));
+}
+
+function saveLocalSessions() {
+    localStorage.setItem("modelasi_sessions", JSON.stringify(sessions));
+    localStorage.setItem("modelasi_session_names", JSON.stringify(sessionNames));
+    localStorage.setItem("modelasi_active_session", activeSessionId);
+}
+
+function renderSidebar() {
+    const sessionList = document.getElementById("sessionList");
+    const sessionCount = document.getElementById("sessionCount");
+    if (!sessionList) return;
+    sessionList.innerHTML = "";
+    
+    const sessionKeys = Object.keys(sessions);
+    if(sessionCount) sessionCount.innerText = sessionKeys.length;
+
+    sessionKeys.forEach((sId, index) => {
+        const div = document.createElement("div");
+        div.className = `session-item ${sId === activeSessionId ? 'active' : ''}`;
+        
+        const titleSpan = document.createElement("span");
+        titleSpan.style.cssText = "flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;";
+        titleSpan.innerText = sessionNames[sId] || `Chat #${index + 1}`;
+        titleSpan.addEventListener("click", () => {
+            activeSessionId = sId;
+            saveLocalSessions();
+            renderSidebar();
+            renderChat();
+            if(sidebar.classList.contains('show')) toggleSidebar();
+        });
+
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "session-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = `<i class="bi bi-pencil"></i>`;
+        editBtn.title = "Đổi tên đoạn chat";
+        editBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const currentTitle = sessionNames[sId] || `Chat #${index + 1}`;
+            const newTitle = prompt("Nhập tên mới cho đoạn chat:", currentTitle);
+            if (newTitle !== null && newTitle.trim() !== "") {
+                sessionNames[sId] = newTitle.trim();
+                saveLocalSessions();
+                renderSidebar();
+            }
+        });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = `<i class="bi bi-trash"></i>`;
+        deleteBtn.title = "Xoá đoạn chat";
+        deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (Object.keys(sessions).length <= 1) {
+                alert("Cần giữ lại ít nhất 1 đoạn chat!");
+                return;
+            }
+            if (confirm("Bạn có chắc chắn muốn xoá đoạn chat này?")) {
+                delete sessions[sId];
+                delete sessionNames[sId];
+                if (activeSessionId === sId) {
+                    activeSessionId = Object.keys(sessions)[0];
+                }
+                saveLocalSessions();
+                renderSidebar();
+                renderChat();
+            }
+        });
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        div.appendChild(titleSpan);
+        div.appendChild(actionsDiv);
+        sessionList.appendChild(div);
+    });
+}
+
+function renderChat() {
+    chatBox.innerHTML = "";
+    const msgs = sessions[activeSessionId] || [];
+    const displayMsgs = msgs.filter(m => m.role !== "system");
+
+    if (displayMsgs.length === 0) {
+        chatBox.innerHTML = `
+            <div class="welcome-screen">
+                <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="welcome-logo" alt="">
+                <div class="welcome-title">ModelAsi</div>
+                <div class="small text-secondary mt-1">v0.5.8</div>
+            </div>
+        `;
+        return;
+    }
+
+    msgs.forEach(msg => {
+        if (msg.role === "system") return;
+        const div = document.createElement("div");
+        div.className = `message ${msg.role === 'user' ? 'user-msg' : 'ai-msg'}`;
+        div.innerHTML = `<div class="msg-text-block">${parseMarkdown(msg.content)}</div>`;
+        chatBox.appendChild(div);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage() {
+    if (isGenerating) return;
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    if (!selectedModelId) {
+        alert("Please select an AI model before chatting!");
+        openModelSelectModal();
+        return;
+    }
+
+    if (!sessions[activeSessionId]) sessions[activeSessionId] = [{ role: "system", content: getFullSystemPrompt() }];
+    sessions[activeSessionId][0].content = getFullSystemPrompt();
+    sessions[activeSessionId].push({ role: "user", content: text });
+    
+    if (!sessionNames[activeSessionId]) {
+        sessionNames[activeSessionId] = text.length > 25 ? text.substring(0, 25) + "..." : text;
+    }
+
+    saveLocalSessions();
+    renderSidebar();
+    renderChat();
+
+    userInput.value = "";
+    sendBtn.classList.remove("show-btn");
+    userInput.blur();
+
+    await triggerAICompletion();
+}
+
+async function triggerAICompletion() {
+    isGenerating = true;
+    userInput.disabled = true;
+    sendBtn.disabled = true;
+
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "thinking-bubble";
+    thinkingDiv.innerHTML = `<div class="spinner-ring"></div><span>ModelAsi is thinking...</span>`;
+    chatBox.appendChild(thinkingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    let keysList = groqApiKeys.filter(k => k && k.trim().length > 0);
+    if (keysList.length === 0) {
+        thinkingDiv.remove();
+        sessions[activeSessionId].push({ role: "assistant", content: "Error: No API keys configured in system settings." });
+        renderChat();
+        isGenerating = false;
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        userInput.focus();
+        return;
+    }
+
+    let success = false;
+    let reply = "";
+    let attempts = 0;
+    const maxAttempts = Math.min(keysList.length, 20);
+
+    while (attempts < maxAttempts && !success) {
+        const currentKey = keysList[currentKeyIndex % keysList.length];
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${currentKey}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: globalModelTag || "openai/gpt-oss-120b",
+                    messages: sessions[activeSessionId],
+                    temperature: 0.7
+                })
+            });
+            const data = await response.json();
+            
+            if (data.choices && data.choices[0]) {
+                reply = data.choices[0].message.content;
+                success = true;
+            } else {
+                currentKeyIndex = (currentKeyIndex + 1) % keysList.length;
+                attempts++;
+            }
+        } catch(e) {
+            currentKeyIndex = (currentKeyIndex + 1) % keysList.length;
+            attempts++;
+        }
+    }
+
+    thinkingDiv.remove();
+
+    if (success) {
+        sessions[activeSessionId].push({ role: "assistant", content: reply });
+    } else {
+        sessions[activeSessionId].push({ role: "assistant", content: "Error: All configured API keys failed or exceeded quotas." });
+    }
+
+    saveLocalSessions();
+    renderChat();
+
+    isGenerating = false;
+    userInput.disabled = false;
+    sendBtn.disabled = false;
+    userInput.focus();
+}
+
+userInput.addEventListener("input", () => {
+    if(userInput.value.trim().length > 0) sendBtn.classList.add("show-btn");
+    else sendBtn.classList.remove("show-btn");
+});
+
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", (e) => { if(e.key === "Enter") { e.preventDefault(); sendMessage(); } });
+
+newChatBtn.addEventListener("click", () => {
+    if (Object.keys(sessions).length >= 5) { alert("Maximum 5 chats reached!"); return; }
+    const newId = "session_" + Date.now();
+    sessions[newId] = [{ role: "system", content: getFullSystemPrompt() }];
+    activeSessionId = newId;
+    saveLocalSessions();
+    renderSidebar();
+    renderChat();
+});
+
+clearChatBtn.addEventListener("click", () => {
+    sessions[activeSessionId] = [{ role: "system", content: getFullSystemPrompt() }];
+    saveLocalSessions();
+    renderChat();
+});
+
+userSettingsModal._element.addEventListener('show.bs.modal', () => {
+    if(currentTheme === "light") themeLightRadio.checked = true;
+    else if(currentTheme === "system") themeSystemRadio.checked = true;
+    else themeDarkRadio.checked = true;
+    
+    settingsSystemPrompt.value = userPersonalSystemPrompt;
+});
+
+userSettingsBtn.addEventListener("click", () => {
+    userSettingsModal.show();
+});
+
+saveUserSettingsBtn.addEventListener("click", () => {
+    if(themeLightRadio.checked) currentTheme = "light";
+    else if(themeSystemRadio.checked) currentTheme = "system";
+    else currentTheme = "dark";
+    applyTheme(currentTheme);
+    localStorage.setItem("modelasi_theme", currentTheme);
+
+    userPersonalSystemPrompt = settingsSystemPrompt.value.trim();
+    localStorage.setItem("modelasi_user_personal_system", userPersonalSystemPrompt);
+
+    if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+        sessions[activeSessionId][0].content = getFullSystemPrompt();
+    }
+    saveLocalSessions();
+
+    userSettingsModal.hide();
+});
+
+initApp();
+</script>
+</body>
+</html>
