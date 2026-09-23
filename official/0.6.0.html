@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ModelAsi v0.6.0 Official</title>
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Marked Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        [data-theme="dark"] {
+            --bg-color: #121417;
+            --panel-bg: #1a1d23;
+            --card-bg: #22262e;
+            --border-color: #2f3542;
+            --accent-color: #10b981;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --neon-blue: #34d399;
+            --input-bg: rgba(34, 38, 46, 0.95);
+            --code-bg: #171a21;
+            --action-btn-bg: rgba(255, 255, 255, 0.05);
+            --action-btn-hover: rgba(16, 185, 129, 0.2);
+            --input-placeholder: #64748b;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --panel-bg: #ffffff;
+            --card-bg: #f8fafc;
+            --border-color: #cbd5e1;
+            --accent-color: #10b981;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --neon-blue: #059669;
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --code-bg: #f1f5f9;
+            --action-btn-bg: rgba(0, 0, 0, 0.05);
+            --action-btn-hover: rgba(16, 185, 129, 0.15);
+            --input-placeholder: #94a3b8;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        .chat-box, .sidebar, #sessionList, .modal-body-scrollable, textarea, code, pre {
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
+        input, textarea, code, pre {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-viewport {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            padding: 12px;
+            gap: 12px;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 270px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            z-index: 100;
+            height: 100%;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-brand-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            object-fit: cover;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .sidebar-brand-title {
+            font-size: 19px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .version-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--neon-blue);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .active-model-pill {
+            font-size: 12px;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .active-model-pill:hover {
+            background-color: var(--neon-blue);
+            color: #000;
+        }
+
+        .model-pill-logo {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            object-fit: contain;
+            border: none !important;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            color: var(--text-sub);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+
+        .session-item:hover {
+            border-color: var(--border-color);
+            color: var(--text-main);
+            transform: translateX(2px);
+        }
+
+        .session-item.active {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0.6;
+        }
+
+        .session-item:hover .session-actions {
+            opacity: 1;
+        }
+
+        .session-actions button {
+            background: transparent;
+            border: none;
+            color: inherit;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .session-actions button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-box {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px;
+            padding-bottom: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y !important;
+            will-change: scroll-position;
+        }
+
+        .welcome-screen {
+            margin: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome-brand-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
+            margin-bottom: 12px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-model-badge {
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .welcome-model-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            object-fit: contain;
+            border: none !important;
+        }
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 16px;
+            max-width: 90%;
+            width: fit-content;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .user-msg {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            max-width: 85%;
+            width: fit-content;
+        }
+
+        .ai-msg {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            align-self: flex-start;
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            width: 100%;
+            max-width: 100%;
+            overflow: visible;
+        }
+
+        @media (max-width: 768px) {
+            .message { max-width: 100%; }
+            .user-msg { max-width: 88%; }
+            .ai-msg { width: 100%; max-width: 100%; }
+        }
+
+        .msg-text-block {
+            width: 100%;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .msg-text-block p { margin-bottom: 0.5rem; }
+        .msg-text-block p:last-child { margin-bottom: 0; }
+
+        .ai-action-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+        }
+
+        .ai-action-btn {
+            background-color: var(--action-btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ai-action-btn:hover {
+            background-color: var(--action-btn-hover);
+            color: var(--neon-blue);
+            border-color: var(--neon-blue);
+        }
+
+        .ai-action-icon-btn {
+            background-color: var(--action-btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            border-radius: 10px;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ai-action-icon-btn:hover {
+            background-color: var(--action-btn-hover);
+            color: var(--neon-blue);
+            border-color: var(--neon-blue);
+        }
+
+        .status-dots-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .status-dot-active {
+            background-color: #10b981;
+            box-shadow: 0 0 6px #10b981;
+        }
+
+        .status-dot-configured {
+            background-color: #ef4444;
+        }
+
+        .status-dot-error {
+            background-color: #f59e0b;
+            box-shadow: 0 0 6px #f59e0b;
+        }
+
+        .status-dot-empty {
+            background-color: #64748b;
+            opacity: 0.35;
+        }
+
+        .table-responsive-wrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-overflow-scrolling: touch;
+            margin: 12px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--code-bg);
+            display: block;
+        }
+
+        .msg-text-block table {
+            width: 100%;
+            min-width: 520px;
+            max-width: none;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .msg-text-block th, .msg-text-block td {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            white-space: normal !important;
+            word-break: normal;
+            overflow-wrap: break-word;
+            vertical-align: top;
+            min-width: 120px;
+        }
+
+        .msg-text-block th {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--neon-blue);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .thinking-bubble {
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            padding: 10px 16px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner-ring {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-top: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animated-loading-dots::after {
+            content: '...';
+            display: inline-block;
+            animation: loadingDots 1.5s infinite steps(4, jump-none);
+            width: 16px;
+            text-align: left;
+        }
+
+        @keyframes loadingDots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .file-card-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .file-card-btn {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .file-card-btn:hover { opacity: 0.9; }
+
+        .input-floating-wrapper {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+        }
+
+        .input-area {
+            background-color: var(--input-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 6px 8px 6px 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-plus-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--neon-blue);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .custom-input {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-main) !important;
+            outline: none !important;
+            font-size: 15px;
+            flex: 1;
+            box-shadow: none !important;
+        }
+        
+        .custom-input::placeholder {
+            color: var(--input-placeholder) !important;
+            opacity: 0.9;
+        }
+
+        .btn-send-icon {
+            width: 0;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .btn-send-icon.show-btn {
+            opacity: 1;
+            pointer-events: auto;
+            width: 42px;
+        }
+
+        .btn-send-icon.stop-mode {
+            background-color: #ef4444 !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            width: 42px !important;
+        }
+
+        .plus-action-menu {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+            z-index: 50;
+        }
+
+        .plus-action-menu.show { display: flex; }
+
+        .plus-action-item {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 8px 12px;
+            text-align: left;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .plus-action-item:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        .modal-body-scrollable {
+            max-height: 65vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        .form-control::placeholder {
+            color: var(--input-placeholder) !important;
+        }
+        
+        .form-label {
+            color: var(--text-main) !important;
+            font-weight: 600;
+        }
+
+        .category-group-header {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--neon-blue);
+            padding: 8px 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-group-models {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px 0 6px 10px;
+        }
+
+        .category-group-models.collapsed { display: none; }
+
+        .model-card-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .model-card-item:hover { border-color: var(--neon-blue); }
+
+        .model-card-item.selected {
+            border-color: var(--neon-blue);
+            background-color: rgba(16, 185, 129, 0.12);
+        }
+
+        .model-logo-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            object-fit: contain;
+            border: none !important;
+        }
+
+        .source-favicon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            .app-viewport { padding: 6px; gap: 0; }
+            .sidebar { position: fixed; top: 6px; left: 6px; bottom: 6px; transform: translateX(-105%); width: 280px; }
+            .sidebar.show { transform: translateX(0); }
+            .overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<input type="file" id="documentFileInput" accept=".txt,.json,.js,.html,.css,.md,.csv,.py,.java,.cpp,.ts" multiple style="display: none;">
+
+<div class="app-viewport">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="sidebar-brand-img" alt="ModelAsi Logo">
+            <span class="sidebar-brand-title">ModelAsi</span>
+            <span class="version-badge">v0.6.0 Official</span>
+            <button class="btn-close btn-close-white ms-auto d-md-none" id="closeSidebarBtn"></button>
+        </div>
+
+        <button class="btn btn-primary w-100 mb-2 shadow-sm fw-bold" id="newChatBtn" style="background-color: var(--accent-color); border-color: var(--accent-color);">
+            <i class="bi bi-plus-lg me-1"></i> Trò chuyện mới (<span id="sessionCount">1</span>/5)
+        </button>
+
+        <button class="btn btn-outline-secondary w-100 mb-3" id="userSettingsBtn" style="color: var(--text-main); border-color: var(--border-color);">
+            <i class="bi bi-gear-fill me-1"></i> Cài đặt
+        </button>
+
+        <div id="sessionList" style="flex: 1; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Main Chat Window -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary d-md-none" id="menuToggleBtn"><i class="bi bi-list"></i></button>
+                <h5 class="m-0 fw-bold">ModelAsi</h5>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="active-model-pill" id="headerActiveModelBtn" title="Nhấp để thay đổi mô hình">
+                    <img id="headerModelLogo" src="" class="model-pill-logo" style="display:none;" alt="">
+                    <i class="bi bi-robot" id="headerModelFallbackIcon"></i> 
+                    <span id="headerModelName">Chọn mô hình...</span> 
+                    <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+                </div>
+                <button class="btn btn-outline-danger btn-sm ms-1" id="clearChatBtn" title="Xóa trò chuyện"><i class="bi bi-trash"></i></button>
+            </div>
+        </div>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <!-- Input Area -->
+        <div class="input-floating-wrapper" id="inputWrapper">
+            <div class="input-area">
+                <div class="plus-action-menu" id="plusActionMenu">
+                    <button type="button" class="plus-action-item" id="menuSelectModelBtn">
+                        <i class="bi bi-cpu-fill text-success"></i> Chọn mô hình
+                    </button>
+                    <button type="button" class="plus-action-item" id="menuAttachFileBtn">
+                        <i class="bi bi-file-earmark-plus-fill text-success"></i> Đính kèm tệp
+                    </button>
+                </div>
+
+                <div class="attached-files-container" id="attachedFilesContainer" style="display: none; padding: 4px 8px; gap: 6px; flex-wrap: wrap;"></div>
+                
+                <div class="input-row">
+                    <button type="button" class="btn-plus-icon" id="plusBtn" title="Tùy chọn">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <input type="text" id="userInput" class="form-control custom-input" placeholder="Nhập tin nhắn..." autocomplete="off">
+                    <button type="button" class="btn-send-icon" id="sendBtn" title="Gửi"><i class="bi bi-send-fill" id="sendBtnIcon"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Select Model -->
+<div class="modal fade" id="selectModelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold text-success"><i class="bi bi-cpu me-2"></i> Chọn mô hình AI</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-scrollable">
+                <div class="mb-3">
+                    <input type="text" id="modelSearchInput" class="form-control" placeholder="🔍 Tìm kiếm mô hình...">
+                </div>
+                <div id="modelListModalContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Content Viewer Modal -->
+<div class="modal fade" id="fileViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary d-flex align-items-center justify-content-between">
+                <h6 class="modal-title fw-bold text-success" id="fileViewerTitle"><i class="bi bi-file-earmark-code me-2"></i> Nội dung tài liệu</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <textarea id="fileViewerCode" class="form-control border-0 p-3" style="min-height: 380px; max-height: 60vh; font-family: monospace; font-size: 13px; background-color: var(--code-bg); color: var(--text-main); resize: vertical;" readonly></textarea>
+            </div>
+            <div class="modal-footer border-top border-secondary d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="copyFileContentBtn"><i class="bi bi-clipboard me-1"></i> Sao chép tất cả</button>
+                <button type="button" class="btn btn-success btn-sm fw-bold" id="downloadFileBtn"><i class="bi bi-download me-1"></i> Tải về máy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generic Error Popup Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header border-bottom border-secondary bg-danger bg-opacity-10">
+                <h6 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Thông báo hệ thống</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center fs-6" id="errorMessageText">
+                Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền và thử lại sau!
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary w-100 fw-bold" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal User Settings -->
+<div class="modal fade" id="userSettingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title fw-bold"><i class="bi bi-sliders me-2"></i> Cài đặt cá nhân</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Thông tin ngữ cảnh cá nhân:</label>
+                    <textarea id="settingsSystemPrompt" class="form-control" rows="3" placeholder="e.g. Tôi là An, sinh viên..."></textarea>
+                    <div class="form-text text-secondary mt-1">Cài đặt cá nhân này sẽ được ghép nối vào ngữ cảnh mặc định.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Giao diện:</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeDark" value="dark" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeDark"><i class="bi bi-moon-stars-fill me-1"></i> Tối</label>
+
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeLight" value="light" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeLight"><i class="bi bi-sun-fill me-1"></i> Sáng</label>
+
+                        <input type="radio" class="btn-check" name="themeOptions" id="themeSystem" value="system" autocomplete="off">
+                        <label class="btn btn-outline-success" for="themeSystem"><i class="bi bi-laptop me-1"></i> Hệ thống</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-success w-100 fw-bold" id="saveUserSettingsBtn">Lưu cài đặt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnsLAxCi_1RiYZ7kwwzNi7subRrvTI04I",
+  authDomain: "dataan-d19b7.firebaseapp.com",
+  databaseURL: "https://dataan-d19b7-default-rtdb.firebaseio.com",
+  projectId: "dataan-d19b7",
+  storageBucket: "dataan-d19b7.firebasestorage.app",
+  messagingSenderId: "634110626824",
+  appId: "1:634110626824:web:903a5181db232369f495bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let groqApiKeys = [];
+let currentKeyIndex = 0;
+let failedKeyIndices = new Set();
+
+let dbModelsList = [];
+let dbCategoriesList = [];
+let dbLogosList = [];
+let globalModelTag = "openai/gpt-oss-120b";
+let adminDefaultSystemPrompt = "You are an intelligent AI assistant.";
+
+let userPersonalSystemPrompt = localStorage.getItem("modelasi_user_personal_system") || "Tôi là người dùng ứng dụng.";
+let selectedModelId = localStorage.getItem("modelasi_selected_model_id") || "";
+
+let sessionNames = JSON.parse(localStorage.getItem("modelasi_session_names") || "{}");
+let activeSessionId = localStorage.getItem("modelasi_active_session") || "session_1";
+let sessions = {};
+try { sessions = JSON.parse(localStorage.getItem("modelasi_sessions") || "{}"); } catch(e){}
+
+let attachedFiles = [];
+let isGenerating = false;
+let currentAbortController = null;
+let lastSentUserMessageText = "";
+let currentTheme = localStorage.getItem("modelasi_theme") || "dark";
+
+window.generatedFilesMap = {};
+let currentViewingFile = null;
+
+function scrollToBottom(force = false) {
+    const chatContainer = document.getElementById("chatBox");
+    if (!chatContainer) return;
+
+    // Kiểm tra xem người dùng có đang ở gần đáy khung chat hay không
+    const distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+    const isNearBottom = distanceFromBottom < 150;
+
+    // Chỉ cuộn xuống nếu là lệnh bắt buộc (khi gửi tin mới) hoặc người dùng đang xem ở vị trí đáy
+    if (force || isNearBottom) {
+        requestAnimationFrame(() => {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: force ? 'smooth' : 'auto'
+            });
+        });
+    }
+}
+
+function showToast(message) {
+    const toastContainer = document.getElementById("toastContainer");
+    const toastEl = document.createElement("div");
+    toastEl.className = "toast align-items-center text-white bg-success border-0 show";
+    toastEl.setAttribute("role", "alert");
+    toastEl.innerHTML = `<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i>${escapeHtml(message)}</div></div>`;
+    toastContainer.appendChild(toastEl);
+    setTimeout(() => toastEl.remove(), 2500);
+}
+
+function applyTheme(theme) {
+    let effectiveTheme = theme;
+    if (theme === "system") {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", effectiveTheme);
+}
+applyTheme(currentTheme);
+
+function extractUrlFromInput(text) {
+    if (!text) return null;
+    const systemMatch = text.match(/system\s*=\s*["']([^"']+)["']/i);
+    if (systemMatch && systemMatch[1]) return systemMatch[1].trim();
+    const plainUrlMatch = text.match(/(https?:\/\/[^\s"']+)/i);
+    if (plainUrlMatch && plainUrlMatch[1]) return plainUrlMatch[1].trim();
+    return null;
+}
+
+function normalizeGitHubUrl(url) {
+    if (!url) return url;
+    let u = url.trim();
+    const ghRegex = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)\/(?:raw|blob)\/(?:refs\/heads\/)?([^\/]+)\/(.+)$/i;
+    const match = u.match(ghRegex);
+    if (match) {
+        const [, user, repo, branch, path] = match;
+        return `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${path}`;
+    }
+    return u;
+}
+
+function getJsDelivrUrl(rawUrl) {
+    const rawGhRegex = /^https?:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/i;
+    const match = rawUrl.match(rawGhRegex);
+    if (match) {
+        const [, user, repo, branch, path] = match;
+        return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
+    }
+    return null;
+}
+
+const urlCache = new Map();
+
+async function fetchWithFallback(originalUrl) {
+    const normalized = normalizeGitHubUrl(originalUrl);
+    if (urlCache.has(normalized)) return urlCache.get(normalized);
+
+    const urlsToTry = [normalized];
+    const jsdelivr = getJsDelivrUrl(normalized);
+    if (jsdelivr && !urlsToTry.includes(jsdelivr)) urlsToTry.push(jsdelivr);
+    urlsToTry.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(normalized)}`);
+
+    let lastError = null;
+    for (const targetUrl of urlsToTry) {
+        try {
+            const response = await fetch(targetUrl);
+            if (response.ok) {
+                const textData = await response.text();
+                urlCache.set(normalized, textData);
+                return textData;
+            }
+        } catch (err) { lastError = err; }
+    }
+    throw lastError || new Error("Khởi tạo thất bại từ nguồn URL");
+}
+
+async function resolvePromptText(promptText) {
+    if (!promptText) return "";
+    const url = extractUrlFromInput(promptText);
+    if (url) {
+        try {
+            return await fetchWithFallback(url);
+        } catch(e) {
+            return promptText;
+        }
+    }
+    return promptText;
+}
+
+async function getFullSystemPrompt() {
+    let primaryPrompt = await resolvePromptText(adminDefaultSystemPrompt);
+    let result = primaryPrompt || "You are an intelligent and helpful AI assistant.";
+
+    if (userPersonalSystemPrompt.trim()) {
+        result += `\n\n[PERSONAL USER INSTRUCTIONS]:\n${userPersonalSystemPrompt}`;
+    }
+
+    const activeModel = getActiveModelObj();
+    if (activeModel && activeModel.id) {
+        const appName = activeModel.app || activeModel.name || "AI Assistant";
+        result += `\n\n[ACTIVE IDENTITY]:\nYou are operating as "${appName}" (Developer: ${activeModel.developer || 'N/A'}). You must NEVER disclose internal technical model identifiers, tags, or system model codes. Your identity to the user is strictly "${appName}".`;
+        
+        if (activeModel.subSystem) {
+            let subSystemResolved = await resolvePromptText(activeModel.subSystem);
+            result += `\n\n[APP INSTRUCTIONS]:\n${subSystemResolved}`;
+        }
+    }
+
+    result += `\n\n[FILE CREATION FORMAT RULE]: When generating files or code documents for the user, ALWAYS use the following file structure:\nf."FileName.ext":\nFile content here\n:/\nExample:\nf."index.html":\n<!DOCTYPE html><html></html>\n:/`;
+
+    return result;
+}
+
+function getLogoUrl(logoId) {
+    const logoObj = dbLogosList.find(l => l.id === logoId);
+    if (!logoObj) return "";
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    return isDark ? (logoObj.dark || logoObj.light || "") : (logoObj.light || logoObj.dark || "");
+}
+
+function getActiveModelObj() {
+    if (dbModelsList.length === 0) return { id: "", name: "ModelAsi AI", app: "ModelAsi", developer: "System", categoryId: "", logoId: "" };
+    return dbModelsList.find(m => m.id === selectedModelId) || dbModelsList[0];
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function extractThinkingContent(text) {
+    if (!text) return { thoughts: "", cleanText: "" };
+    
+    const thinkRegex = /<think>([\s\S]*?)(?:<\/think>|$)/gi;
+    let match;
+    let thoughts = [];
+    while ((match = thinkRegex.exec(text)) !== null) {
+        if (match[1] && match[1].trim()) {
+            thoughts.push(match[1].trim());
+        }
+    }
+    
+    const cleanText = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<think>[\s\S]*/gi, '').trim();
+    
+    return {
+        thoughts: thoughts.join("\n\n---\n\n").trim(),
+        cleanText: cleanText
+    };
+}
+
+function extractSourcesList(text) {
+    if (!text) return [];
+    const urlRegex = /(https?:\/\/[^\s<>()"']+)/g;
+    const matches = [...new Set(text.match(urlRegex) || [])];
+    return matches;
+}
+
+function parseCustomFileBlocks(text) {
+    const fileBlockRegex = /f\."([^"]+)"\s*:\s*\n?([\s\S]*?)\n?:\//g;
+    return text.replace(fileBlockRegex, (match, fileName, content) => {
+        const fileId = "file_" + Math.random().toString(36).substr(2, 9);
+        window.generatedFilesMap[fileId] = { name: fileName.trim(), content: content };
+        return `\n\n<div class="file-card-box">
+            <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                <i class="bi bi-file-earmark-code-fill text-success fs-5"></i>
+                <span class="fw-bold text-truncate" style="max-width: 200px;" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
+            </div>
+            <button type="button" class="file-card-btn" onclick="window.viewGeneratedFile('${fileId}')">
+                <i class="bi bi-eye-fill"></i> <span>Xem file</span>
+            </button>
+        </div>\n\n`;
+    });
+}
+
+function parseMarkdown(text) {
+    const extracted = extractThinkingContent(text);
+    let processed = parseCustomFileBlocks(extracted.cleanText);
+
+    let parsedHtml = "";
+    if (typeof marked !== 'undefined' && marked.parse) {
+        try { 
+            parsedHtml = marked.parse(processed);
+            parsedHtml = parsedHtml.replace(/<table(\s[^>]*)?>/g, '<div class="table-responsive-wrapper"><table$1>')
+                                   .replace(/<\/table>/g, '</table></div>');
+        } catch(e) { 
+            parsedHtml = escapeHtml(processed); 
+        }
+    } else {
+        parsedHtml = escapeHtml(processed);
+    }
+
+    return parsedHtml;
+}
+
+function render20StatusDotsHtml(activeIdx, failedSet, configuredKeysCount) {
+    let html = '<div class="status-dots-wrapper" title="Trạng thái hệ thống">';
+    for (let i = 0; i < 20; i++) {
+        let dotClass = "status-dot-empty";
+        if (i < configuredKeysCount) {
+            if (i === activeIdx) {
+                dotClass = "status-dot-active";
+            } else if (failedSet && failedSet.has(i)) {
+                dotClass = "status-dot-error";
+            } else {
+                dotClass = "status-dot-configured";
+            }
+        } else if (failedSet && failedSet.has(i)) {
+            dotClass = "status-dot-error";
+        }
+        html += `<span class="status-dot ${dotClass}" title="Kênh ${i + 1}"></span>`;
+    }
+    html += '</div>';
+    return html;
+}
+
+window.viewGeneratedFile = function(fileId) {
+    const fileData = window.generatedFilesMap[fileId];
+    if (!fileData) return;
+    currentViewingFile = fileData;
+    document.getElementById("fileViewerTitle").innerHTML = `<i class="bi bi-file-earmark-code me-2"></i> ${escapeHtml(fileData.name)}`;
+    document.getElementById("fileViewerCode").value = fileData.content;
+    fileViewerModal.show();
+};
+
+const overlay = document.getElementById('overlay');
+const sidebar = document.getElementById('sidebar');
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+const chatBox = document.getElementById('chatBox');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const sendBtnIcon = document.getElementById('sendBtnIcon');
+const newChatBtn = document.getElementById('newChatBtn');
+const clearChatBtn = document.getElementById('clearChatBtn');
+
+const plusBtn = document.getElementById('plusBtn');
+const plusActionMenu = document.getElementById('plusActionMenu');
+const menuSelectModelBtn = document.getElementById('menuSelectModelBtn');
+const menuAttachFileBtn = document.getElementById('menuAttachFileBtn');
+
+const headerActiveModelBtn = document.getElementById('headerActiveModelBtn');
+const headerModelName = document.getElementById('headerModelName');
+const headerModelLogo = document.getElementById('headerModelLogo');
+const headerModelFallbackIcon = document.getElementById('headerModelFallbackIcon');
+
+const documentFileInput = document.getElementById('documentFileInput');
+const attachedFilesContainer = document.getElementById('attachedFilesContainer');
+
+const selectModelModal = new bootstrap.Modal(document.getElementById('selectModelModal'));
+const fileViewerModal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
+const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+const modelListModalContainer = document.getElementById('modelListModalContainer');
+const modelSearchInput = document.getElementById('modelSearchInput');
+
+const userSettingsModal = new bootstrap.Modal(document.getElementById('userSettingsModal'));
+const userSettingsBtn = document.getElementById('userSettingsBtn');
+const saveUserSettingsBtn = document.getElementById('saveUserSettingsBtn');
+const settingsSystemPrompt = document.getElementById('settingsSystemPrompt');
+
+plusBtn.addEventListener("click", (e) => { e.stopPropagation(); plusActionMenu.classList.toggle("show"); });
+document.addEventListener("click", () => plusActionMenu.classList.remove("show"));
+menuAttachFileBtn.addEventListener("click", () => { documentFileInput.click(); });
+menuSelectModelBtn.addEventListener("click", openModelSelectModal);
+headerActiveModelBtn.addEventListener("click", openModelSelectModal);
+
+document.getElementById("copyFileContentBtn").addEventListener("click", () => {
+    if (!currentViewingFile) return;
+    navigator.clipboard.writeText(currentViewingFile.content).then(() => {
+        showToast("Đã sao chép nội dung tệp!");
+    });
+});
+
+document.getElementById("downloadFileBtn").addEventListener("click", () => {
+    if (!currentViewingFile) return;
+    const blob = new Blob([currentViewingFile.content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = currentViewingFile.name || "download.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+function toggleSidebar() { sidebar.classList.toggle('show'); overlay.classList.toggle('show'); }
+if(menuToggleBtn) menuToggleBtn.addEventListener('click', toggleSidebar);
+if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', toggleSidebar);
+
+function updateHeaderModelDisplay() {
+    const m = getActiveModelObj();
+    const displayName = m.name ? `${m.name}${m.app ? ' (' + m.app + ')' : ''}` : (m.app || "Chọn mô hình");
+    headerModelName.innerText = displayName;
+    const logoUrl = getLogoUrl(m.logoId);
+    if (logoUrl) {
+        headerModelLogo.src = logoUrl;
+        headerModelLogo.style.display = "inline-block";
+        headerModelFallbackIcon.style.display = "none";
+    } else {
+        headerModelLogo.style.display = "none";
+        headerModelFallbackIcon.style.display = "inline-block";
+    }
+}
+
+function openModelSelectModal() {
+    renderModelSelectorList("");
+    selectModelModal.show();
+}
+
+modelSearchInput.addEventListener("input", (e) => {
+    renderModelSelectorList(e.target.value.toLowerCase());
+});
+
+function renderModelSelectorList(filterText) {
+    modelListModalContainer.innerHTML = "";
+    if (dbModelsList.length === 0) {
+        modelListModalContainer.innerHTML = `<div class="text-center text-secondary py-3">Không có mô hình nào khả dụng.</div>`;
+        return;
+    }
+
+    const uncategorizedModels = dbModelsList.filter(m => !m.categoryId);
+    
+    dbCategoriesList.forEach(cat => {
+        const catModels = dbModelsList.filter(m => m.categoryId === cat.id && (
+            !filterText || 
+            (m.name && m.name.toLowerCase().includes(filterText)) || 
+            (m.app && m.app.toLowerCase().includes(filterText)) ||
+            (m.developer && m.developer.toLowerCase().includes(filterText))
+        ));
+
+        if (filterText && catModels.length === 0) return;
+
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "mb-3";
+
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "category-group-header";
+        headerDiv.innerHTML = `<span><i class="bi bi-folder2-open me-2"></i>${escapeHtml(cat.name)} (${catModels.length})</span> <i class="bi bi-chevron-down"></i>`;
+        
+        const modelsContainer = document.createElement("div");
+        modelsContainer.className = "category-group-models";
+
+        headerDiv.addEventListener("click", () => {
+            modelsContainer.classList.toggle("collapsed");
+        });
+
+        catModels.forEach(m => {
+            modelsContainer.appendChild(createModelCardElement(m));
+        });
+
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(modelsContainer);
+        modelListModalContainer.appendChild(groupDiv);
+    });
+
+    const filteredUncat = uncategorizedModels.filter(m => 
+        !filterText || 
+        (m.name && m.name.toLowerCase().includes(filterText)) || 
+        (m.app && m.app.toLowerCase().includes(filterText)) ||
+        (m.developer && m.developer.toLowerCase().includes(filterText))
+    );
+
+    if (filteredUncat.length > 0) {
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "mb-3";
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "category-group-header";
+        headerDiv.innerHTML = `<span><i class="bi bi-folder2 me-2"></i>Mô hình khác (${filteredUncat.length})</span>`;
+        const modelsContainer = document.createElement("div");
+        modelsContainer.className = "category-group-models";
+        headerDiv.addEventListener("click", () => modelsContainer.classList.toggle("collapsed"));
+
+        filteredUncat.forEach(m => modelsContainer.appendChild(createModelCardElement(m)));
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(modelsContainer);
+        modelListModalContainer.appendChild(groupDiv);
+    }
+}
+
+function createModelCardElement(m) {
+    const isSelected = (m.id === selectedModelId);
+    const card = document.createElement("div");
+    card.className = `model-card-item ${isSelected ? 'selected' : ''}`;
+    const logoUrl = getLogoUrl(m.logoId);
+
+    const modelTitle = m.name || m.app || "Mô hình AI";
+    const appSubTitle = m.app && m.app !== m.name ? `Ứng dụng: ${m.app}` : null;
+
+    card.innerHTML = `
+        ${logoUrl ? `<img src="${logoUrl}" class="model-logo-img" alt="">` : `<i class="bi bi-cpu fs-4 text-success"></i>`}
+        <div style="flex:1;">
+            <div class="fw-bold text-main" style="font-size: 14px;">${escapeHtml(modelTitle)}</div>
+            <div class="small text-secondary" style="font-size: 11px; display: flex; gap: 8px; flex-wrap: wrap;">
+                ${appSubTitle ? `<span class="badge bg-secondary bg-opacity-25 text-light">${escapeHtml(appSubTitle)}</span>` : ''}
+                <span>Nhà phát triển: ${escapeHtml(m.developer || 'N/A')}</span>
+            </div>
+        </div>
+        ${isSelected ? `<span class="badge bg-success text-white fw-bold">Đang dùng</span>` : ''}
+    `;
+
+    card.addEventListener("click", async () => {
+        selectedModelId = m.id;
+        localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+        updateHeaderModelDisplay();
+        if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+            sessions[activeSessionId][0].content = await getFullSystemPrompt();
+        }
+        saveLocalSessions();
+        renderChat(false);
+        selectModelModal.hide();
+    });
+    return card;
+}
+
+userSettingsBtn.addEventListener("click", () => {
+    settingsSystemPrompt.value = userPersonalSystemPrompt;
+    const currentT = localStorage.getItem("modelasi_theme") || "dark";
+    if (currentT === "dark") document.getElementById("themeDark").checked = true;
+    else if (currentT === "light") document.getElementById("themeLight").checked = true;
+    else document.getElementById("themeSystem").checked = true;
+    userSettingsModal.show();
+});
+
+saveUserSettingsBtn.addEventListener("click", async () => {
+    userPersonalSystemPrompt = settingsSystemPrompt.value.trim();
+    localStorage.setItem("modelasi_user_personal_system", userPersonalSystemPrompt);
+    
+    let chosenTheme = "dark";
+    if (document.getElementById("themeLight").checked) chosenTheme = "light";
+    else if (document.getElementById("themeSystem").checked) chosenTheme = "system";
+
+    localStorage.setItem("modelasi_theme", chosenTheme);
+    applyTheme(chosenTheme);
+
+    if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+        sessions[activeSessionId][0].content = await getFullSystemPrompt();
+    }
+    saveLocalSessions();
+    userSettingsModal.hide();
+});
+
+documentFileInput.addEventListener("change", (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            attachedFiles.push({ name: file.name, content: event.target.result });
+            renderAttachedFilesUI();
+        };
+        reader.readAsText(file);
+    });
+    documentFileInput.value = "";
+});
+
+function renderAttachedFilesUI() {
+    if (attachedFiles.length === 0) {
+        attachedFilesContainer.style.display = "none";
+        attachedFilesContainer.innerHTML = "";
+        return;
+    }
+    attachedFilesContainer.style.display = "flex";
+    attachedFilesContainer.innerHTML = "";
+    attachedFiles.forEach((file, idx) => {
+        const chip = document.createElement("div");
+        chip.className = "badge bg-dark border border-secondary text-light d-flex align-items-center gap-1 p-2";
+        chip.innerHTML = `<i class="bi bi-file-earmark-code text-success"></i> <span style="max-width: 120px;" class="text-truncate">${escapeHtml(file.name)}</span> <i class="bi bi-x-circle text-danger ms-1" style="cursor:pointer;" onclick="window.removeAttachedFile(${idx})"></i>`;
+        attachedFilesContainer.appendChild(chip);
+    });
+}
+
+window.removeAttachedFile = function(idx) {
+    attachedFiles.splice(idx, 1);
+    renderAttachedFilesUI();
+};
+
+function saveLocalSessions() {
+    localStorage.setItem("modelasi_sessions", JSON.stringify(sessions));
+    localStorage.setItem("modelasi_session_names", JSON.stringify(sessionNames));
+    localStorage.setItem("modelasi_active_session", activeSessionId);
+}
+
+function renderSidebar() {
+    const sessionList = document.getElementById("sessionList");
+    const sessionCount = document.getElementById("sessionCount");
+    if (!sessionList) return;
+    sessionList.innerHTML = "";
+    
+    const sessionKeys = Object.keys(sessions);
+    if(sessionCount) sessionCount.innerText = sessionKeys.length;
+
+    sessionKeys.forEach((sId, index) => {
+        const div = document.createElement("div");
+        div.className = `session-item ${sId === activeSessionId ? 'active' : ''}`;
+        
+        const titleSpan = document.createElement("span");
+        titleSpan.style.cssText = "flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;";
+        titleSpan.innerText = sessionNames[sId] || `Trò chuyện #${index + 1}`;
+        titleSpan.addEventListener("click", () => {
+            activeSessionId = sId;
+            saveLocalSessions();
+            renderSidebar();
+            renderChat(true);
+        });
+
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "session-actions";
+        
+        const delBtn = document.createElement("button");
+        delBtn.innerHTML = `<i class="bi bi-trash"></i>`;
+        delBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (Object.keys(sessions).length <= 1) return;
+            delete sessions[sId];
+            delete sessionNames[sId];
+            if (activeSessionId === sId) {
+                activeSessionId = Object.keys(sessions)[0];
+            }
+            saveLocalSessions();
+            renderSidebar();
+            renderChat(true);
+        });
+
+        actionsDiv.appendChild(delBtn);
+        div.appendChild(titleSpan);
+        div.appendChild(actionsDiv);
+        sessionList.appendChild(div);
+    });
+}
+
+newChatBtn.addEventListener("click", async () => {
+    const sessionKeys = Object.keys(sessions);
+    if (sessionKeys.length >= 5) return;
+    const newId = "session_" + Date.now();
+    const systemPromptContent = await getFullSystemPrompt();
+    sessions[newId] = [{ role: "system", content: systemPromptContent }];
+    sessionNames[newId] = `Cuộc gọi mới ${sessionKeys.length + 1}`;
+    activeSessionId = newId;
+    saveLocalSessions();
+    renderSidebar();
+    renderChat(true);
+});
+
+clearChatBtn.addEventListener("click", async () => {
+    const systemPromptContent = await getFullSystemPrompt();
+    sessions[activeSessionId] = [{ role: "system", content: systemPromptContent }];
+    saveLocalSessions();
+    renderChat(true);
+});
+
+function renderChat(forceScroll = false) {
+    chatBox.innerHTML = "";
+    const activeMsgs = sessions[activeSessionId] || [];
+    const chatMsgs = activeMsgs.filter(m => m.role !== 'system');
+
+    if (chatMsgs.length === 0) {
+        const activeModel = getActiveModelObj();
+        const modelLogoUrl = getLogoUrl(activeModel.logoId);
+        const displayName = activeModel.name ? `${activeModel.name}${activeModel.app ? ' (' + activeModel.app + ')' : ''}` : (activeModel.app || "ModelAsi AI");
+
+        chatBox.innerHTML = `
+            <div class="welcome-screen">
+                <img src="https://raw.githubusercontent.com/hothiptv/AlChat/refs/heads/main/AlChat.png" class="welcome-brand-logo" alt="ModelAsi">
+                <div class="welcome-title">ModelAsi</div>
+                
+                <div class="welcome-model-badge mt-2">
+                    ${modelLogoUrl ? `<img src="${modelLogoUrl}" class="welcome-model-logo" alt="">` : `<i class="bi bi-cpu text-success"></i>`}
+                    <span>${escapeHtml(displayName)}</span>
+                </div>
+
+                <div class="badge bg-dark border border-secondary text-success px-3 py-2 mt-3">Hệ thống đã sẵn sàng. Hãy bắt đầu trò chuyện!</div>
+            </div>
+        `;
+        return;
+    }
+
+    chatMsgs.forEach((m, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "message-wrapper";
+
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${m.role === 'user' ? 'user-msg' : 'ai-msg'}`;
+        
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "msg-text-block";
+
+        if (m.role === 'assistant') {
+            const parsedMainContent = parseMarkdown(m.content);
+            contentDiv.innerHTML = parsedMainContent;
+            msgDiv.appendChild(contentDiv);
+
+            // Action Toolbar under AI Message
+            const actionBar = document.createElement("div");
+            actionBar.className = "ai-action-bar";
+
+            // 1. Suy nghĩ (Thinking) Button
+            const extracted = extractThinkingContent(m.content);
+            const thinkBoxId = `think_box_${idx}_${Math.random().toString(36).substr(2,6)}`;
+            
+            if (extracted.thoughts && extracted.thoughts.trim()) {
+                const thinkBtn = document.createElement("button");
+                thinkBtn.type = "button";
+                thinkBtn.className = "ai-action-btn";
+                thinkBtn.innerHTML = `<i class="bi bi-lightbulb-fill text-warning"></i> <span>Suy nghĩ</span> <i class="bi bi-chevron-down ms-1" style="font-size:10px;"></i>`;
+                thinkBtn.onclick = () => {
+                    const el = document.getElementById(thinkBoxId);
+                    if (el) el.classList.toggle("d-none");
+                };
+                actionBar.appendChild(thinkBtn);
+            }
+
+            // 2. Nguồn (Sources) Button
+            const sources = extractSourcesList(m.content);
+            let sourceBoxId = null;
+            if (sources.length > 0) {
+                sourceBoxId = `source_box_${idx}_${Math.random().toString(36).substr(2,6)}`;
+                const sourceBtn = document.createElement("button");
+                sourceBtn.type = "button";
+                sourceBtn.className = "ai-action-btn";
+                sourceBtn.innerHTML = `<i class="bi bi-link-45deg text-info"></i> <span>Nguồn (${sources.length})</span>`;
+                sourceBtn.onclick = () => {
+                    const el = document.getElementById(sourceBoxId);
+                    if (el) el.classList.toggle("d-none");
+                };
+                actionBar.appendChild(sourceBtn);
+            }
+
+            // 3. Copy Button
+            const copyBtn = document.createElement("button");
+            copyBtn.type = "button";
+            copyBtn.className = "ai-action-icon-btn";
+            copyBtn.title = "Sao chép văn bản";
+            copyBtn.innerHTML = `<i class="bi bi-copy"></i>`;
+            copyBtn.onclick = () => {
+                const cleanText = extracted.cleanText || m.content;
+                navigator.clipboard.writeText(cleanText).then(() => {
+                    showToast("Đã sao chép văn bản!");
+                });
+            };
+            actionBar.appendChild(copyBtn);
+
+            // 4. Regenerate Button
+            const regenBtn = document.createElement("button");
+            regenBtn.type = "button";
+            regenBtn.className = "ai-action-icon-btn";
+            regenBtn.title = "Tạo lại tin nhắn";
+            regenBtn.innerHTML = `<i class="bi bi-arrow-clockwise"></i>`;
+            regenBtn.onclick = () => {
+                regenerateAiMessage(m);
+            };
+            actionBar.appendChild(regenBtn);
+
+            msgDiv.appendChild(actionBar);
+
+            // 20 Status Dots Container under AI Message
+            const keyInfo = m.keyStateInfo || { activeIdx: currentKeyIndex, failedSet: Array.from(failedKeyIndices), keysCount: groqApiKeys.length };
+            const dotsHtml = render20StatusDotsHtml(keyInfo.activeIdx, new Set(keyInfo.failedSet), keyInfo.keysCount);
+            msgDiv.insertAdjacentHTML('beforeend', dotsHtml);
+
+            // Collapsible Thoughts Container
+            if (extracted.thoughts && extracted.thoughts.trim()) {
+                const thinkDiv = document.createElement("div");
+                thinkDiv.id = thinkBoxId;
+                thinkDiv.className = "d-none mt-2 p-3 border border-secondary rounded bg-body-tertiary text-secondary";
+                thinkDiv.style.cssText = "font-size: 13px; line-height: 1.4; max-height: 250px; overflow-y: auto; white-space: pre-wrap;";
+                thinkDiv.innerText = extracted.thoughts;
+                msgDiv.appendChild(thinkDiv);
+            }
+
+            // Collapsible Sources Container
+            if (sourceBoxId && sources.length > 0) {
+                const sourceDiv = document.createElement("div");
+                sourceDiv.id = sourceBoxId;
+                sourceDiv.className = "d-none mt-2 p-2 border rounded bg-body-tertiary";
+                sourceDiv.innerHTML = sources.map((s, i) => {
+                    let domain = "";
+                    try { domain = new URL(s).hostname; } catch(e){}
+                    const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=32` : "";
+                    return `
+                        <div class="d-flex align-items-center gap-2 my-1" style="font-size: 12px;">
+                            <span class="badge bg-secondary">${i+1}</span>
+                            ${faviconUrl ? `<img src="${faviconUrl}" class="source-favicon" alt="" onerror="this.style.display='none'">` : ''}
+                            <a href="${escapeHtml(s)}" target="_blank" rel="noopener noreferrer" class="text-truncate text-success" style="max-width: 260px;">${escapeHtml(s)}</a>
+                        </div>
+                    `;
+                }).join("");
+                msgDiv.appendChild(sourceDiv);
+            }
+
+        } else {
+            contentDiv.innerText = m.content;
+            msgDiv.appendChild(contentDiv);
+        }
+
+        wrapper.appendChild(msgDiv);
+        chatBox.appendChild(wrapper);
+    });
+
+    scrollToBottom(forceScroll);
+}
+
+userInput.addEventListener("input", () => {
+    updateSendButtonState(isGenerating);
+});
+
+function updateSendButtonState(generating = false) {
+    if (generating) {
+        sendBtn.classList.add("stop-mode", "show-btn");
+        sendBtnIcon.className = "bi bi-stop-circle-fill";
+        sendBtn.title = "Tạm dừng";
+    } else {
+        sendBtn.classList.remove("stop-mode");
+        sendBtnIcon.className = "bi bi-send-fill";
+        sendBtn.title = "Gửi";
+        if (userInput.value.trim().length > 0 || attachedFiles.length > 0) {
+            sendBtn.classList.add("show-btn");
+        } else {
+            sendBtn.classList.remove("show-btn");
+        }
+    }
+}
+
+sendBtn.addEventListener("click", () => {
+    if (isGenerating) {
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+        isGenerating = false;
+        updateSendButtonState(false);
+        const thinkingEl = document.getElementById("thinkingBubble");
+        if (thinkingEl) thinkingEl.remove();
+        showToast("Đã tạm dừng phản hồi.");
+    } else {
+        sendMessage();
+    }
+});
+
+userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (!isGenerating) sendMessage();
+    }
+});
+
+async function regenerateAiMessage(assistantMessageObj) {
+    if (isGenerating) return;
+    const currentSession = sessions[activeSessionId];
+    if (!currentSession) return;
+
+    const msgIdx = currentSession.indexOf(assistantMessageObj);
+    if (msgIdx !== -1) {
+        currentSession.splice(msgIdx);
+    } else {
+        if (currentSession.length > 0 && currentSession[currentSession.length - 1].role === 'assistant') {
+            currentSession.pop();
+        }
+    }
+
+    saveLocalSessions();
+    renderChat(true);
+
+    await triggerAiResponse();
+}
+
+async function sendMessage() {
+    if (isGenerating) return;
+    const text = userInput.value.trim();
+    if (!text && attachedFiles.length === 0) return;
+
+    lastSentUserMessageText = text;
+
+    let fullUserMessage = text;
+    if (attachedFiles.length > 0) {
+        const filesPayload = attachedFiles.map(f => `[ATTACHED FILE: ${f.name}]\n${f.content}\n[END FILE]`).join("\n\n");
+        fullUserMessage = `${filesPayload}\n\n${text}`;
+    }
+
+    userInput.value = "";
+    attachedFiles = [];
+    renderAttachedFilesUI();
+
+    if (!sessions[activeSessionId]) {
+        sessions[activeSessionId] = [{ role: "system", content: await getFullSystemPrompt() }];
+    }
+
+    sessions[activeSessionId].push({ role: "user", content: fullUserMessage });
+    
+    if (!sessionNames[activeSessionId] || sessionNames[activeSessionId].startsWith("Cuộc gọi mới") || sessionNames[activeSessionId].startsWith("Trò chuyện #")) {
+        sessionNames[activeSessionId] = text.slice(0, 24) || "Đính kèm tệp";
+    }
+
+    saveLocalSessions();
+    renderSidebar();
+    renderChat(true); // Cuộn xuống khi người dùng chủ động gửi tin nhắn
+
+    await triggerAiResponse();
+}
+
+async function triggerAiResponse() {
+    if (isGenerating) return;
+
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "thinking-bubble";
+    thinkingDiv.id = "thinkingBubble";
+    thinkingDiv.innerHTML = `<div class="spinner-ring"></div> <span>Đang xử lý<span class="animated-loading-dots"></span></span>`;
+    chatBox.appendChild(thinkingDiv);
+    scrollToBottom(true);
+
+    isGenerating = true;
+    updateSendButtonState(true);
+
+    currentAbortController = new AbortController();
+
+    try {
+        sessions[activeSessionId][0].content = await getFullSystemPrompt();
+        const responseText = await callBackendAPI(sessions[activeSessionId], currentAbortController.signal);
+        
+        const thinkingEl = document.getElementById("thinkingBubble");
+        if (thinkingEl) thinkingEl.remove();
+
+        const messageObj = { 
+            role: "assistant", 
+            content: responseText,
+            keyStateInfo: {
+                activeIdx: currentKeyIndex,
+                failedSet: Array.from(failedKeyIndices),
+                keysCount: groqApiKeys.length
+            }
+        };
+
+        sessions[activeSessionId].push(messageObj);
+        saveLocalSessions();
+        renderChat(false); // Cập nhật phản hồi AI mà không ép cuộn nếu người dùng đã trượt lên xem lại
+    } catch (err) {
+        const thinkingEl = document.getElementById("thinkingBubble");
+        if (thinkingEl) thinkingEl.remove();
+
+        if (err.name === 'AbortError') {
+            console.log("Hủy yêu cầu.");
+        } else {
+            const currentSession = sessions[activeSessionId];
+            if (currentSession && currentSession.length > 0 && currentSession[currentSession.length - 1].role === 'user') {
+                currentSession.pop();
+            }
+            saveLocalSessions();
+            renderChat(false);
+
+            if (lastSentUserMessageText) {
+                userInput.value = lastSentUserMessageText;
+            }
+
+            document.getElementById("errorMessageText").innerText = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền và thử lại sau!";
+            errorModal.show();
+        }
+    } finally {
+        isGenerating = false;
+        currentAbortController = null;
+        updateSendButtonState(false);
+    }
+}
+
+async function callBackendAPI(messagesPayload, abortSignal) {
+    if (!groqApiKeys || groqApiKeys.length === 0) {
+        throw new Error("Chưa cấu hình kênh hệ thống.");
+    }
+
+    let attempts = 0;
+    const totalKeys = groqApiKeys.length;
+    const maxAttempts = totalKeys;
+
+    while (attempts < maxAttempts) {
+        const apiKey = groqApiKeys[currentKeyIndex];
+        try {
+            const cleanMessages = messagesPayload.map(m => ({ role: m.role, content: m.content }));
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: globalModelTag || "openai/gpt-oss-120b",
+                    messages: cleanMessages,
+                    temperature: 0.7,
+                    max_tokens: 4096
+                }),
+                signal: abortSignal
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    return data.choices[0].message.content;
+                }
+            } else {
+                failedKeyIndices.add(currentKeyIndex);
+            }
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                throw e;
+            }
+            failedKeyIndices.add(currentKeyIndex);
+        }
+
+        currentKeyIndex = (currentKeyIndex + 1) % totalKeys;
+        attempts++;
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    throw new Error("Không thể kết nối đến máy chủ.");
+}
+
+async function initApp() {
+    const cachedConfig = localStorage.getItem("modelasi_cached_config");
+    if (cachedConfig) {
+        try {
+            const data = JSON.parse(cachedConfig);
+            if (data.apiKeys) groqApiKeys = data.apiKeys;
+            if (data.models) dbModelsList = data.models;
+            if (data.categories) dbCategoriesList = data.categories;
+            if (data.logos) dbLogosList = data.logos;
+            if (data.globalModelTag) globalModelTag = data.globalModelTag;
+            if (data.systemPrompt) adminDefaultSystemPrompt = data.systemPrompt;
+        } catch(e) {}
+    }
+
+    if (dbModelsList.length > 0 && (!selectedModelId || !dbModelsList.some(m => m.id === selectedModelId))) {
+        selectedModelId = dbModelsList[0].id;
+        localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+    }
+
+    updateHeaderModelDisplay();
+
+    if (!sessions[activeSessionId]) {
+        sessions[activeSessionId] = [{ role: "system", content: await getFullSystemPrompt() }];
+    }
+    renderSidebar();
+    renderChat(false);
+
+    getDoc(doc(db, "modelasi_settings", "config")).then(async (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            localStorage.setItem("modelasi_cached_config", JSON.stringify(data));
+            if (data.apiKeys) groqApiKeys = data.apiKeys;
+            if (data.models) dbModelsList = data.models;
+            if (data.categories) dbCategoriesList = data.categories;
+            if (data.logos) dbLogosList = data.logos;
+            if (data.globalModelTag) globalModelTag = data.globalModelTag;
+            if (data.systemPrompt) adminDefaultSystemPrompt = data.systemPrompt;
+
+            if (dbModelsList.length > 0 && (!selectedModelId || !dbModelsList.some(m => m.id === selectedModelId))) {
+                selectedModelId = dbModelsList[0].id;
+                localStorage.setItem("modelasi_selected_model_id", selectedModelId);
+            }
+            updateHeaderModelDisplay();
+            if (sessions[activeSessionId] && sessions[activeSessionId][0]) {
+                sessions[activeSessionId][0].content = await getFullSystemPrompt();
+            }
+            renderChat(false);
+        }
+    }).catch(e => console.error("Data sync status:", e));
+}
+
+initApp();
+</script>
+</body>
+</html>
